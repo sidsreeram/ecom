@@ -7,11 +7,13 @@ import (
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
 	interfaces "github.com/ECOMMERCE_PROJECT/pkg/repository/interface"
+
 	"gorm.io/gorm"
 )
 type userDatabase struct {
 	DB *gorm.DB
 }
+
 
 func NewUserRepository(DB *gorm.DB) interfaces.UserRepository {
 	return &userDatabase{DB}
@@ -44,3 +46,14 @@ func (c *userDatabase) OtpLogin(phno string) (int, error) {
 	err := c.DB.Raw(query, phno).Scan(&id).Error
 	return id, err
 }
+func (c *userDatabase) insertOTP(emailID, otp string) error {
+    // Prepare the SQL statement for inserting OTP
+	var id int
+    query := "INSERT INTO temp_otp (email_id, otp) VALUES ($1, $2)"
+    
+	err:=c.DB.Raw(query,emailID).Scan(&id).Error
+    // Execute the SQL query
+   
+    return err
+}
+

@@ -65,7 +65,7 @@ func (u *UserHandler) UserLogin(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	ss, err := u.userUsecase.UserLogin(c.Request.Context(), user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -85,5 +85,20 @@ func (u *UserHandler) UserLogin(c *gin.Context) {
 		Data:       nil,
 		Errors:     nil,
 	})
- return
+	return
+}
+func (u *UserHandler) UserOTP(c *gin.Context) {
+	var userotp helperstruct.EMAILOTP
+
+	err := c.Bind(&userotp)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "there is an issue in binding",
+			Data:       nil,
+			Errors:     err,
+		})
+	}
+	otp, err := u.userUsecase.OtpLogin(c.Request.Context(), userotp.EmailId)
 }

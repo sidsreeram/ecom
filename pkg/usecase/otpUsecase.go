@@ -1,67 +1,100 @@
 package usecase
 
 import (
-	"context"
-	"log"
-	"os"
+	"fmt"
+	"math/rand"
+	"net/smtp"
+	"strconv"
+	"sync"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
-	"github.com/ECOMMERCE_PROJECT/pkg/config"
-	services "github.com/ECOMMERCE_PROJECT/pkg/usecase/interface"
-	"github.com/joho/godotenv"
-	"github.com/twilio/twilio-go"
-	openapi "github.com/twilio/twilio-go/rest/verify/v2"
 )
 
-type OtpUseCase struct {
-	// otpRepo interfaces.OtpRepository
-	cfg config.Config
-}
+// type OtpUseCase struct {
+// 	// otpRepo interfaces.OtpRepository
+// 	cfg config.Config
+// }
 
-func NewOtpUseCase(cfg config.Config) services.OtpUseCase {
-	return &OtpUseCase{
-		// otpRepo: repo,
-		cfg: cfg,
-	}
-}
+// func NewOtpUseCase(cfg config.Config) services.OtpUseCase {
+// 	return &OtpUseCase{
+// 		// otpRepo: repo,
+// 		cfg: cfg,
+// 	}
+// }
 
-func (c *OtpUseCase) SendOtp(ctx context.Context, phno helperstruct.OTPData) error {
-	err := godotenv.Load(".env")
+// func (c *OtpUseCase) SendOtp(ctx context.Context, phno helperstruct.OTPData) error {
+// 	err := godotenv.Load(".env")
+// 	if err != nil {
+// 		log.Fatal("Error loading .env file")
+// 	}
+// 	twilioAccountSID := os.Getenv("TWILIOAUTHTOKEN")
+// 	twilioAuthToken := os.Getenv("TWILIOACCOUNTSID")
+// 	twilioServiceID := os.Getenv("TWILIOSERVICEID")
+// 	var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientParams{
+// 		Username: twilioAccountSID,
+// 		Password: twilioAuthToken,
+// 	})
+
+// 	params := &openapi.CreateVerificationParams{}
+// 	params.SetTo("+91" + phno.PhoneNumber)
+// 	log.Fatal(twilioAccountSID)
+// 	params.SetChannel("sms")
+// 	_, err = client.VerifyV2.CreateVerification(twilioServiceID, params)
+// 	return err
+// }
+
+// func (c *OtpUseCase) ValidateOtp(otpDetails helperstruct.VerifyOtp) (*openapi.VerifyV2VerificationCheck, error) {
+// 	err := godotenv.Load(".env")
+// 	if err != nil {
+// 		log.Fatal("Error loading .env file")
+// 	}
+// 	twilioAccountSID := os.Getenv("TWILIOAUTHTOKEN")
+// 	twilioAuthToken := os.Getenv("TWILIOACCOUNTSID")
+// 	twilioServiceID := os.Getenv("TWILIOSERVICEID")
+// 	var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientParams{
+// 		Username: twilioAccountSID,
+// 		Password: twilioAuthToken,
+// 	})
+// 	params := &openapi.CreateVerificationCheckParams{}
+// 	params.SetTo("+91" + otpDetails.User.PhoneNumber)
+// 	params.SetCode(otpDetails.Code)
+// 	resp, err := client.VerifyV2.CreateVerificationCheck(twilioServiceID, params)
+// 	return resp, err
+// }
+
+var otpMutex sync.Mutex
+
+// GenerateOTPEMAIL generates an OTP for email.
+func GenerateOTPEMAIL() string {
+	otpMutex.Lock()
+	defer otpMutex.Unlock()
+
+	// Generate a random 4-digit OTP
+	otp := strconv.Itoa(rand.Intn(9000) + 1000)
+	return otp
+}
+func SendEmailOTP(email helperstruct.UserReq, otp string) error {
+	auth := smtp.PlainAuth(
+		"",
+		"sidx141202@gmail.com", // Replace with your Gmail email
+		"yhlm wzqg wobt deww",  // Replace with your Gmail app password
+		"smtp.gmail.com",
+	)
+	subject := "OTP Verification"
+	body := "Your OTP code is: " + otp
+	msg := "Subject: " + subject + "\r\n\r\n" + body
+
+	err := smtp.SendMail(
+		"smtp.gmail.com:587",
+		auth,
+		"sidx141202@gmail.com",     // Replace with your Gmail email
+		[]string{email.Email}, // Use email from the struct
+		[]byte(msg),
+	)
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println("Failed to send email:", err)
 	}
-	twilioAccountSID := "AC1ca3125a8ea1cb7a13e80550f2acd880"
-	twilioAuthToken := "f0a09d942e63796bb035b2b8c535d922"
-	twilioServiceID := "VAa53821b64c22cfe9140d5bd789a7f5ea"
-	var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: twilioAccountSID,
-		Password: twilioAuthToken,
-	})
 
-	params := &openapi.CreateVerificationParams{}
-	params.SetTo("+91" + phno.PhoneNumber)
-	log.Fatal("hiiiii")
-	log.Fatal(twilioAccountSID)
-	params.SetChannel("sms")
-	_, err = client.VerifyV2.CreateVerification(twilioServiceID, params)
 	return err
-}
-
-func (c *OtpUseCase) ValidateOtp(otpDetails helperstruct.VerifyOtp) (*openapi.VerifyV2VerificationCheck, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	twilioAccountSID := os.Getenv("TWILIOACCOUNTSID")
-	twilioAuthToken := os.Getenv("TWILIOAUTHTOKEN")
-	twilioServiceID := os.Getenv("TWILIOSERVICEID")
-	var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: twilioAccountSID,
-		Password: twilioAuthToken,
-	})
-	params := &openapi.CreateVerificationCheckParams{}
-	params.SetTo("+91" + otpDetails.User.PhoneNumber)
-	params.SetCode(otpDetails.Code)
-	resp, err := client.VerifyV2.CreateVerificationCheck(twilioServiceID, params)
-	return resp, err
 }

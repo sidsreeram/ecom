@@ -42,7 +42,7 @@ func (c *adminDatabase) AdminLogin(email string) (domain.Admins, error) {
 }
 
 func (c *adminDatabase) BlockUser(body helperstruct.BlockData, adminId int) error {
-	
+
 	tx := c.DB.Begin()
 
 	var isExists bool
@@ -59,7 +59,7 @@ func (c *adminDatabase) BlockUser(body helperstruct.BlockData, adminId int) erro
 		tx.Rollback()
 		return err
 	}
-	
+
 	if err := tx.Exec("INSERT INTO user_infos (users_id, reason_for_blocking, blocked_at, blocked_by) VALUES (?, ?, NOW(), ?)", body.UserId, body.Reason, adminId).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -69,7 +69,7 @@ func (c *adminDatabase) BlockUser(body helperstruct.BlockData, adminId int) erro
 		tx.Rollback()
 		return err
 	}
-	
+
 	return nil
 
 }
@@ -100,4 +100,32 @@ func (c *adminDatabase) UnblockUser(id int) error {
 		return err
 	}
 	return nil
+}
+func (c *adminDatabase) FindUser(id int) (response.UserDetails, error) {
+	var userdetails response.UserDetails
+	query := `SELECT  users.name, users.email , users.mobile , users.is_blocked , info.bloked_by , info.blocked_at , info.reason__for_blocking FROM users as users FULL OUTER JOIN user_info as info on user.id = info.user_id `
+	err := c.DB.Raw(query, id).Scan(&userdetails).Error
+	if err != nil {
+		return response.UserDetails{}, err
+	}
+	if userdetails.Email == "" {
+		return response.UserDetails{}, fmt.Errorf("There is no such user")
+	}
+	return response.UserDetails{}, nil
+}
+func (c *adminDatabase) ListAllUsers() ([]response.UserDetails, error) {
+	var userdetails []response.UserDetails
+
+	query := `
+		SELECT users.name, users.email, users.mobile, users.is_blocked, info.blocked_by, info.blocked_at, info.reason_for_blocking
+		FROM users
+		LEFT JOIN user_info as info ON users.id = info.user_id
+	`
+
+	err := c.DB.Raw(query).Scan(&userdetails).Error
+	if err != nil {
+		return []response.UserDetails{}, err
+	}
+
+	return userdetails, nil
 }

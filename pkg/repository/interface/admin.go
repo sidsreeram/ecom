@@ -12,4 +12,6 @@ type AdminRepository interface {
 	AdminLogin(email string) (domain.Admins, error)
 	BlockUser(body helperstruct.BlockData, adminId int) error
 	UnblockUser(id int) error
+	FindUser(id int)(response.UserDetails, error) 
+	ListAllUsers() ([]response.UserDetails, error)
 }

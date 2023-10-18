@@ -8,6 +8,7 @@ type UserData struct {
 }
 
 type UserDetails struct {
+	UserID            int
 	Name              string
 	Email             string
 	Mobile            string

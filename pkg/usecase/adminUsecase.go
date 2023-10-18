@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
@@ -85,3 +86,29 @@ func (c *adminUseCase) UnblockUser(id int) error {
 	err := c.adminRepo.UnblockUser(id)
 	return err
 }
+func (c *adminUseCase) FindUser(id int) (response.UserDetails, error) {
+	userDetails, err := c.adminRepo.FindUser(id)
+	return userDetails, err
+}
+
+func (c *adminUseCase) ListAllUsers() ([]response.UserDetails, error) {
+	var userList []response.UserDetails
+
+	// You need to fetch a list of user IDs here. Replace this with your actual logic.
+	userIDs, err := c.adminRepo.ListAllUsers()
+	if err != nil {
+		return []response.UserDetails{}, err
+	}
+
+	for _, userID := range userIDs {
+		userDetails, err := c.FindUser(userID.UserID)
+		if err != nil {
+			log.Fatalf("Can't find user")
+			continue
+		}
+		userList = append(userList, userDetails)
+	}
+
+	return userList, nil
+}
+

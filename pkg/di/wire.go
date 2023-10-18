@@ -9,18 +9,16 @@ import (
 
 	http "github.com/ECOMMERCE_PROJECT/pkg/api"
 
-	"github.com/ECOMMERCE_PROJECT/pkg/usecase"
+	usecase "github.com/ECOMMERCE_PROJECT/pkg/usecase"
 )
 
-func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
+func InitializeAPI(config.Config) (*http.ServerHTTP, error) {                                  
 	wire.Build(db.ConnectDatabase,
 		repository.NewUserRepository,
 		repository.NewAdminRepository,
 		usecase.NewUserUseCase,
-		usecase.NewOtpUseCase,
 		usecase.NewAdminUsecase,
 		handlers.NewUserHandelr,
-		handlers.NewOtpHandler,
 		handlers.NewAdminHandler,
 		http.NewServerHTTP,
 	)

@@ -9,4 +9,6 @@ import (
 type OtpUseCase interface {
 	SendOtp(ctx context.Context, phno helperstruct.OTPData) error
 	ValidateOtp(otpDetails helperstruct.VerifyOtp) (*openapi.VerifyV2VerificationCheck, error)
+	GenerateOTPEMAIL()(string)
+	SendEmailOTP(emailotp helperstruct.EMAILOTP,otp string)error
 }

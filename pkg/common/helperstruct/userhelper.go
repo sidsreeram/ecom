@@ -13,10 +13,13 @@ type LoginReq struct {
 }
 
 type OTPData struct {
-	PhoneNumber string `json:"phoneNumber,omitempty" validate:"required"`
+	PhoneNumber string `json:"phnum,omitempty" validate:"required"`
 }
 
 type VerifyOtp struct {
 	User *OTPData `json:"user,omitempty" validate:"required"`
 	Code string   `json:"code,omitempty" validate:"required"`
+}
+type EMAILOTP struct{
+	EmailId string `json:"email" binding:"required"`
 }
