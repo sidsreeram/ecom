@@ -13,4 +13,5 @@ type AdminUsecase interface {
 	BlockUser(body helperstruct.BlockData, adminId int) error
 	UnblockUser(id int) error
 	FindUser(id int) (response.UserDetails, error)
+	ListAllUsers() ([]response.UserDetails, error) 
 }

@@ -100,5 +100,5 @@ func (u *UserHandler) UserOTP(c *gin.Context) {
 			Errors:     err,
 		})
 	}
-	otp, err := u.userUsecase.OtpLogin(c.Request.Context(), userotp.EmailId)
+	// otp, err := u.userUsecase.OtpLogin(c.Request.Context(), userotp.EmailId)
 }

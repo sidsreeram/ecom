@@ -17,7 +17,7 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeAPI1(configConfig config.Config) (*api.ServerHTTP, error) {
+func InitializeAPI(configConfig config.Config) (*api.ServerHTTP, error) {
 	gormDB, err := db.ConnectDatabase(configConfig)
 	if err != nil {
 		return nil, err
@@ -25,11 +25,12 @@ func InitializeAPI1(configConfig config.Config) (*api.ServerHTTP, error) {
 	userRepository := repository.NewUserRepository(gormDB)
 	userUseCase := usecase.NewUserUseCase(userRepository)
 	userHandler := handlers.NewUserHandelr(userUseCase)
-	otpUseCase := usecase.NewOtpUseCase(configConfig)
-	otpHandler := handlers.NewOtpHandler(configConfig, otpUseCase, userUseCase)
 	adminRepository := repository.NewAdminRepository(gormDB)
 	adminUsecase := usecase.NewAdminUsecase(adminRepository)
 	adminHandler := handlers.NewAdminHandler(adminUsecase)
-	serverHTTP := api.NewServerHTTP(userHandler, otpHandler, adminHandler)
+	productRepository := repository.NewProductRepostiory(gormDB)
+	productUsecase := usecase.NewProductUsecase(productRepository)
+	productHandler := handlers.NewProductHandler(productUsecase)
+	serverHTTP := api.NewServerHTTP(userHandler, adminHandler, productHandler)
 	return serverHTTP, nil
 }

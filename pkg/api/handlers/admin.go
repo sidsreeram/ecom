@@ -207,3 +207,23 @@ func (cr *AdminHandler) FindUser(c *gin.Context){
 		Errors: nil,
 	})
 }
+func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
+    
+    userList, err := cr.adminUseCase.ListAllUsers()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, response.Response{
+            StatusCode: 500,
+            Message:    "Error listing users",
+            Data:       nil,
+            Errors:     err.Error(),
+        })
+        return
+    }
+
+    c.JSON(http.StatusOK, response.Response{
+        StatusCode: 200,
+        Message:    "List of all users",
+        Data:       userList,
+        Errors:     nil,
+    })
+}

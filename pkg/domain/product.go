@@ -10,14 +10,14 @@ type Category struct {
 }
 
 type Product struct {
-	ID                uint   `gorm:"primaryKey;unique;not null"`
-	ProductName       string `gorm:"unique;not null"`
-	Description       string
-	BrandManufacturer string // Combined field for Brand and Manufacturer
-	CategoryID        uint
-	Category          Category `gorm:"foreignKey:CategoryID"`
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID          uint   `gorm:"primaryKey;unique;not null"`
+	ProductName string `gorm:"unique;not null"`
+	Description string
+	Brand       string // Combined field for Brand and Manufacturer
+	CategoryID  uint
+	Category    Category `gorm:"foreignKey:CategoryID"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type ProductItem struct {

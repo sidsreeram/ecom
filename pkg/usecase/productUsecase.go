@@ -32,3 +32,31 @@ func (c*ProductUsecase)ListCategories()([]response.Category,error){
 	categories,err:=c.productrepo.ListCategories()
 	return categories,err
 }
+func (c*ProductUsecase)DisplayACategory(id int)(response.Category,error){
+	categories,err:=c.productrepo.DisplayACategory(id)
+	return categories,err
+}
+func (c*ProductUsecase)AddProduct(product helperstruct.Product)(response.Product,error){
+	newProduct,err:=c.productrepo.AddProduct(product)
+	return newProduct,err
+}
+func (c*ProductUsecase)UpdateProduct(id int,Product helperstruct.Product)(response.Product,error){
+	updateproduct,err:=c.productrepo.UpdateProduct(id,Product)
+	return updateproduct,err
+}
+func (c*ProductUsecase)DeleteProduct(id int)error{
+	err:=c.productrepo.DeleteProduct(id)
+	return err
+}
+func (c*ProductUsecase)AddProductitem(productItem helperstruct.ProductItem)(response.ProductItem,error){
+	newProductItem,err:=c.productrepo.AddProductitem(productItem)
+	return newProductItem,err
+}
+func (c*ProductUsecase)UpdateProductItem(id int,productItem helperstruct.ProductItem)(response.ProductItem,error){
+	updateProductItem,err:=c.productrepo.UpdateProductItem(id,productItem)
+	return updateProductItem,err
+}
+func (c*ProductUsecase)DeleteProductItem(id int)error{
+	err:=c.productrepo.DeleteProductItem(id)
+	return err
+}
