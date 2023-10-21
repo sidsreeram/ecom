@@ -9,8 +9,14 @@ import (
 )
 
 type UserRepository interface {
-	UserSignUp(ctx context.Context, user helperstruct.UserReq) (response.UserData, error) 
-	UserLogin(ctx context.Context,email string)(domain.Users,error)
+	UserSignUp(ctx context.Context, user helperstruct.UserReq) (response.UserData, error)
+	UserLogin(ctx context.Context, email string) (domain.Users, error)
 	IsSignIn(phno string) (bool, error)
-	OtpLogin(phno string) (int, error)
+	StoreOTP(userEmail string, otp string) bool
+	VerifyOTP(otp string) (int, bool)
+	AddAddress(id int, address helperstruct.Address) error
+	UpdateAddress(id, addressId int, address helperstruct.Address) error
+	ViewProfile(id int) (response.UserData, error)
+	UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error)
+
 }

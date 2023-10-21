@@ -14,11 +14,11 @@ func UserAuth(c *gin.Context) {
 		return
 	}
 
-	UsersID, err := ValidateToken(tokenString)
+	UsersId, err := ValidateToken(tokenString)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	c.Set("userEmail", UsersID)
+	c.Set("usersID", UsersId)
 	c.Next()
 }

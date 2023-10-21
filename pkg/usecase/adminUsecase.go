@@ -103,7 +103,7 @@ func (c *adminUseCase) ListAllUsers() ([]response.UserDetails, error) {
 	for _, userID := range userIDs {
 		userDetails, err := c.FindUser(userID.UserID)
 		if err != nil {
-			log.Fatalf("Can't find user")
+			log.Printf("Can't find user")
 			continue
 		}
 		userList = append(userList, userDetails)

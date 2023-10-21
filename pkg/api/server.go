@@ -22,7 +22,19 @@ func NewServerHTTP(
 	{
 		user.POST("signup", userHandler.UserSignUp)
 		user.POST("login", userHandler.UserLogin)
-	
+		user.POST("/otp", userHandler.VerifyLogin)
+
+		category := user.Group("/categories")
+		{
+			category.GET("/categories", productHandler.ListCategories)
+			category.GET("/showcategory/:category_id", productHandler.DisplayACategory)
+		}
+		//    product:=user.Group("/product")
+		{
+			// product.GET("/showproduct",productHandler.)
+		}
+
+	}
 	admin := engine.Group("/admin")
 	{
 		admin.POST("login", adminHandler.AdminLoging)
@@ -37,34 +49,34 @@ func NewServerHTTP(
 
 			adminUsers.PATCH("/block", adminHandler.BlockUser)
 			adminUsers.PATCH("/unblock/:user_id", adminHandler.UnblockUser)
-			adminUsers.GET("/finduser",adminHandler.FindUser)
-			adminUsers.GET("listallusers",adminHandler.ListAllUsers)
+			adminUsers.GET("/finduser", adminHandler.FindUser)
+			adminUsers.GET("listallusers", adminHandler.ListAllUsers)
 		}
-		admincategory :=admin.Group("/category")
+		admincategory := admin.Group("/category")
 		{
-			admincategory.POST("/addcategory",productHandler.CreateCategory)
-			admincategory.PATCH("/updatecategory/:id",productHandler.UpdateCategory)
-			admincategory.DELETE("/deletecategory/:category_id",productHandler.DeleteCategory)
-			admincategory.GET("listallcategory",productHandler.ListCategories)
-			admincategory.GET("/showcategory/:category_id",productHandler.DisplayACategory)
+			admincategory.POST("/addcategory", productHandler.CreateCategory)
+			admincategory.PATCH("/updatecategory/:id", productHandler.UpdateCategory)
+			admincategory.DELETE("/deletecategory/:category_id", productHandler.DeleteCategory)
+			admincategory.GET("listallcategory", productHandler.ListCategories)
+			admincategory.GET("/showcategory/:category_id", productHandler.DisplayACategory)
 		}
-		adminProduct :=admin.Group("/product")
+		adminProduct := admin.Group("/product")
 		{
-			adminProduct.POST("/addproduct",productHandler.AddProduct)
-			adminProduct.PATCH("/update/:id",productHandler.UpdateProduct)
-			adminProduct.DELETE("/delete/:id",productHandler.DeleteProduct)
+			adminProduct.POST("/addproduct", productHandler.AddProduct)
+			adminProduct.PATCH("/update/:id", productHandler.UpdateProduct)
+			adminProduct.DELETE("/delete/:id", productHandler.DeleteProduct)
 		}
-		adminProductitem:=admin.Group("/product-item")
+		adminProductitem := admin.Group("/product-item")
 		{
-			adminProductitem.POST("add",productHandler.AddProductitem)
-			adminProductitem.PATCH("update/:id",productHandler.UpdateProductitem)
-			adminProductitem.DELETE("delete/:id",productHandler.DeleteProductItem)
+			adminProductitem.POST("add", productHandler.AddProductitem)
+			adminProductitem.PATCH("update/:id", productHandler.UpdateProductitem)
+			adminProductitem.DELETE("delete/:id", productHandler.DeleteProductItem)
 		}
 	}
 	return &ServerHTTP{engine: engine}
-}
+
 }
 
-func (s *ServerHTTP) Start(){
+func (s *ServerHTTP) Start() {
 	s.engine.Run(":3000")
 }

@@ -12,14 +12,15 @@ type LoginReq struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type OTPData struct {
-	PhoneNumber string `json:"phnum,omitempty" validate:"required"`
+type OTP struct {
+	Code string
 }
-
-type VerifyOtp struct {
-	User *OTPData `json:"user,omitempty" validate:"required"`
-	Code string   `json:"code,omitempty" validate:"required"`
-}
-type EMAILOTP struct{
-	EmailId string `json:"email" binding:"required"`
+type Address struct {
+	House_number string `json:"house_number" `
+	Street       string `json:"street" `
+	City         string `json:"city " `
+	District     string `json:"district " `
+	Landmark     string `json:"landmark" `
+	Pincode      int    `json:"pincode " `
+	IsDefault    bool   `json:"isdefault" `
 }

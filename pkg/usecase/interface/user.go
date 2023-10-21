@@ -8,8 +8,11 @@ import (
 )
 
 type UserUseCase interface {
-	UserSignUp(ctx context.Context, user helperstruct.UserReq) (response.UserData,error)
-	UserLogin(ctx context.Context,user helperstruct.LoginReq) (string,error)
+	UserSignUp(ctx context.Context, user helperstruct.UserReq) (response.UserData, error)
+	UserLogin(ctx context.Context, user helperstruct.LoginReq) error
 	IsSignIn(phno string) (bool, error)
-	OtpLogin(phno string) (string, error)
+	VerifyOTP(otp string) (string, error)
+	AddAddress(id int, address helperstruct.Address) error
+	UpdateAddress(id, addressId int, address helperstruct.Address) error
+
 }

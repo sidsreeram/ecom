@@ -17,4 +17,5 @@ type ProductRepository interface {
 	AddProductitem(productItem helperstruct.ProductItem) (response.ProductItem, error)
 	UpdateProductItem(id int, product helperstruct.ProductItem) (response.ProductItem, error)
 	DeleteProductItem(id int)error
+	DisplayAproductitem(id int)(response.ProductItem,error)
 }

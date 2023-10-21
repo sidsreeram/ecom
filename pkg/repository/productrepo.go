@@ -156,7 +156,7 @@ func (c *productDatabase) UpdateProductItem(id int, product helperstruct.Product
 
 	return updatedProductItem, err
 }
-func(c*productDatabase)DeleteProductItem(id int)error{
+func(c*productDatabase) DeleteProductItem(id int)error{
 	var exists bool
 	query1 := `SELECT exists(SELECT 1 FROM product_items where id=?)`
 	c.DB.Raw(query1, id).Scan(&exists)
@@ -166,4 +166,29 @@ func(c*productDatabase)DeleteProductItem(id int)error{
 	query := `DELETE FROM product_items where id=$1`
 	err := c.DB.Exec(query, id).Error
 	return err
+}
+func (c*productDatabase) DisplayAproductitem(id int)(response.ProductItem,error){
+	var productItem response.ProductItem
+	query:=`SELECT p.product_name,
+	p.description,
+	p.brand,
+	c.category_name, 
+	pi.*
+	FROM products p 
+	JOIN categories c ON p.category_id=c.id 
+	JOIN product_items pi ON p.id=pi.product_id 
+	WHERE pi.id=$1`
+	err := c.DB.Raw(query, id).Scan(&productItem).Error
+	if err != nil {
+		return response.ProductItem{}, err
+	}
+	if productItem.Id == 0 {
+		return response.ProductItem{}, fmt.Errorf("there is no such product item")
+	}
+	getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
+	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
+	if err != nil {
+		return response.ProductItem{}, err
+	}
+	return productItem, nil
 }

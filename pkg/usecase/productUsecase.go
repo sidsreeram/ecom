@@ -60,3 +60,7 @@ func (c*ProductUsecase)DeleteProductItem(id int)error{
 	err:=c.productrepo.DeleteProductItem(id)
 	return err
 }
+func  (c*ProductUsecase)DisplayAproductitem(id int)(response.ProductItem,error){
+	ProductItem,err:=c.productrepo.DisplayAproductitem(id)
+	return ProductItem,err
+}
