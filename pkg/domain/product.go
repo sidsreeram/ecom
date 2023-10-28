@@ -31,6 +31,7 @@ type ProductItem struct {
 	Color      string  // Color of the sport product
 	Size       string  // Size of the sport product (e.g., "Small," "Medium," "Large," etc.)
 	Rating     float64 // Customer rating of the sport product (e.g., 4.5 for a 4.5-star rating)
+	Imag        string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }

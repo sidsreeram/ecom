@@ -16,7 +16,7 @@ type ProductItem struct {
 	Sku        string  `json:"sku"`
 	Qty        int     `json:"quantity"`
 	Color      string  `json:"colour"`
-	Size       int     `json:"size"`
+	Size       string  `json:"size"`
 	Price      int     `json:"price"`
 	Instock    bool    `json:"instock"`
 	Rating     float64 `json:"rating"`

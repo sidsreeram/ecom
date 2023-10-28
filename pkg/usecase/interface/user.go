@@ -14,5 +14,6 @@ type UserUseCase interface {
 	VerifyOTP(otp string) (string, error)
 	AddAddress(id int, address helperstruct.Address) error
 	UpdateAddress(id, addressId int, address helperstruct.Address) error
-
+	ViewProfile(id int)(response.UserData, error)
+	UpdateProfile(id int,updatingdetails helperstruct.UserReq)(response.UserData,error)
 }

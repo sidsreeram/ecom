@@ -14,11 +14,12 @@ func NewServerHTTP(
 	userHandler *handlers.UserHandler,
 	adminHandler *handlers.AdminHandler,
 	productHandler *handlers.ProductHandler,
-) *ServerHTTP {
+	carthandler *handlers.CartHandler) *ServerHTTP {
 	engine := gin.New()
 	engine.Use(gin.Logger())
 
 	user := engine.Group("/user")
+
 	{
 		user.POST("signup", userHandler.UserSignUp)
 		user.POST("login", userHandler.UserLogin)
@@ -26,12 +27,40 @@ func NewServerHTTP(
 
 		category := user.Group("/categories")
 		{
-			category.GET("/categories", productHandler.ListCategories)
+			category.GET("/allcategories", productHandler.ListCategories)
 			category.GET("/showcategory/:category_id", productHandler.DisplayACategory)
 		}
-		//    product:=user.Group("/product")
+		product := user.Group("/product")
 		{
-			// product.GET("/showproduct",productHandler.)
+			product.GET("/displayproduct", productHandler.ListAllProduct)
+			product.GET("/aproduct/:id", productHandler.DisplayAProduct)
+		}
+		productitem := user.Group("/productitem")
+		{
+			productitem.GET("allproductitem", productHandler.DisaplyaAllProductItems)
+			productitem.GET("/aproductitem/:id", productHandler.DisplayAproductitem)
+		}
+		user.Use(middlewares.UserAuth)
+		{
+
+			profile := user.Group("/profile")
+			{
+				profile.GET("view", userHandler.Viewprofile)
+				profile.PATCH("edit", userHandler.UserEditProfile)
+			}
+
+			address := user.Group("/address")
+			{
+				address.POST("add", userHandler.AddAddress)
+				address.PATCH("update/:addressId", userHandler.UpdateAddress)
+			}
+			cart := user.Group("/cart")
+			{
+				cart.POST("/addtocart/:product_item_id", carthandler.AddToCart)
+				cart.PATCH("/remove/:product_item_id", carthandler.RemoveFromCart)
+				cart.GET("/cart/", carthandler.ListCart)
+			}
+
 		}
 
 	}
@@ -65,12 +94,16 @@ func NewServerHTTP(
 			adminProduct.POST("/addproduct", productHandler.AddProduct)
 			adminProduct.PATCH("/update/:id", productHandler.UpdateProduct)
 			adminProduct.DELETE("/delete/:id", productHandler.DeleteProduct)
+			adminProduct.GET("/allproduct", productHandler.ListAllProduct)
+			adminProduct.GET("/product/:id", productHandler.DisplayAProduct)
 		}
 		adminProductitem := admin.Group("/product-item")
 		{
 			adminProductitem.POST("add", productHandler.AddProductitem)
 			adminProductitem.PATCH("update/:id", productHandler.UpdateProductitem)
 			adminProductitem.DELETE("delete/:id", productHandler.DeleteProductItem)
+			adminProductitem.GET("/allproductitem", productHandler.DisaplyaAllProductItems)
+			adminProductitem.GET("productitem/:id", productHandler.DisplayAproductitem)
 		}
 	}
 	return &ServerHTTP{engine: engine}

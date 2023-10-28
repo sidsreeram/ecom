@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -14,11 +15,13 @@ import (
 
 type UserHandler struct {
 	userUsecase services.UserUseCase
+	cartusecase services.CartUseCase
 }
 
-func NewUserHandelr(usecase services.UserUseCase) *UserHandler {
+func NewUserHandelr(usecase services.UserUseCase,cartusecase services.CartUseCase) *UserHandler {
 	return &UserHandler{
 		userUsecase: usecase,
+		cartusecase: cartusecase,
 	}
 }
 
@@ -45,6 +48,16 @@ func (u *UserHandler) UserSignUp(c *gin.Context) {
 		})
 		return
 	}
+	err = u.cartusecase.CreateCart(userData.Id)
+	if err!=nil{
+		c.JSON(http.StatusBadRequest,response.Response{
+			StatusCode: 400,
+			Message: "Failed to create Cart",
+			Data: nil,
+			Errors: err.Error(),
+		})
+	}
+	
 	c.JSON(http.StatusCreated, response.Response{
 		StatusCode: 201,
 		Message:    "user signup Successfully",
@@ -90,6 +103,7 @@ func (u *UserHandler) UserLogin(c *gin.Context) {
 }
 
 func (u *UserHandler) VerifyLogin(c *gin.Context) {
+
 	var otp helperstruct.OTP
 
 	err := c.Bind(&otp)
@@ -113,20 +127,25 @@ func (u *UserHandler) VerifyLogin(c *gin.Context) {
 		})
 		return
 	}
+	c.SetSameSite(http.SameSiteLaxMode)
+	log.Println("hiiiii ")
+	c.SetCookie("UserAuth", ss, 3600*24*30, "", "", false, true)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
 		Message:    "Login Successfully",
 		Data:       nil,
 		Errors:     nil,
 	})
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("UserAuth", ss, 3600*24*30, "", "", false, true)
+
+	log.Println("byeee ")
 	return
 
 }
 
 func (u *UserHandler) AddAddress(c *gin.Context) {
-	Id, err := handlerutils.GetUserIdFromContext(c)
+	Id, err:= handlerutils.GetUserIdFromContext(c)
+	
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -196,7 +215,7 @@ func (u *UserHandler) UpdateAddress(c *gin.Context) {
 		})
 		return
 	}
-	err = u.userUsecase.UpdateAddress(Id,addressId, Address)
+	err = u.userUsecase.UpdateAddress(Id, addressId, Address)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -214,4 +233,71 @@ func (u *UserHandler) UpdateAddress(c *gin.Context) {
 		Errors:     nil,
 	})
 
+}
+func (cr *UserHandler) Viewprofile(c *gin.Context) {
+	Id, err := handlerutils.GetUserIdFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find Id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	Profile, err := cr.userUsecase.ViewProfile(Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find userprofile",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Profile",
+		Data:       Profile,
+		Errors:     nil,
+	})
+}
+func (cr *UserHandler) UserEditProfile(c *gin.Context) {
+	Id, err := handlerutils.GetUserIdFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find Id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	var updatingDetails helperstruct.UserReq
+	err = c.Bind(&updatingDetails)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't bind details",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+	}
+	updatedProfile, err := cr.userUsecase.UpdateProfile(Id, updatingDetails)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find userprofile",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Profile updated",
+		Data:       updatedProfile,
+		Errors:     nil,
+	})
 }

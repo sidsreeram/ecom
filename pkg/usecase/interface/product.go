@@ -14,7 +14,11 @@ type ProductUsecase interface {
 	AddProduct(product helperstruct.Product)(response.Product,error)
 	UpdateProduct(id int,Product helperstruct.Product)(response.Product,error)
 	DeleteProduct(id int)error
+	ListAllProduct(viewproduct helperstruct.QueryParams) ([]response.Product, error)
+	DisplayAProduct(id int) (response.Product, error)
 	AddProductitem(productItem helperstruct.ProductItem)(response.ProductItem,error)
 	UpdateProductItem(id int,productItem helperstruct.ProductItem)(response.ProductItem,error)
 	DeleteProductItem(id int)error
+	DisaplyaAllProductItems(viewProductitem helperstruct.QueryParams) ([]response.ProductItem, error)
+	DisplayAproductitem(id int) (response.ProductItem, error)
 }

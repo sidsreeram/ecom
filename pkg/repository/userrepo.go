@@ -174,7 +174,7 @@ func (c *userDatabase) ViewProfile(id int) (response.UserData, error) {
 
 func (c *userDatabase) UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error){
 var profile response.UserData
-query:=`UPDATE users SET name=$1,email=$2,mobile=$3 WHERE id=$4 RETURING name,email,mobile`
+query:=`UPDATE users SET name=$1,email=$2,mobile=$3 WHERE id=$4 RETURNING name,email,mobile`
 err:=c.DB.Raw(query,updatedetails.Name,updatedetails.Email,updatedetails.Mobile,id).Scan(&profile).Error
 fmt.Printf("updated Profile")
 return profile,err

@@ -4,7 +4,7 @@ import (
 	"github.com/ECOMMERCE_PROJECT/pkg/api/handlers"
 	config "github.com/ECOMMERCE_PROJECT/pkg/config"
 	"github.com/ECOMMERCE_PROJECT/pkg/db"
-	"github.com/ECOMMERCE_PROJECT/pkg/repository"
+	repository "github.com/ECOMMERCE_PROJECT/pkg/repository"
 	"github.com/google/wire"
 
 	http "github.com/ECOMMERCE_PROJECT/pkg/api"
@@ -17,12 +17,15 @@ func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
 		repository.NewUserRepository,
 		repository.NewAdminRepository,
 		repository.NewProductRepostiory,
+		repository.NewCartRepository,
 		usecase.NewUserUseCase,
 		usecase.NewAdminUsecase,
 		usecase.NewProductUsecase,
+		usecase.NewCartUsecase,
 		handlers.NewUserHandelr,
 		handlers.NewAdminHandler,
 		handlers.NewProductHandler,
+		handlers.NewCartHandler,
 		http.NewServerHTTP,
 	)
 	return &http.ServerHTTP{}, nil

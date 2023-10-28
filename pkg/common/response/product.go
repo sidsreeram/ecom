@@ -1,5 +1,7 @@
 package response
 
+import "time"
+
 type Category struct {
 	Id           int
 	CategoryName string
@@ -12,21 +14,18 @@ type Product struct {
 	Brand        string
 	CategoryName string
 }
-
 type ProductItem struct {
-	Id           uint
-	ProductName  string
-	Description  string
-	Brand        string
-	CategoryName string
-	Sku          string
-	QtyInStock   int
-	Color        string
-	Ram          int
-	Battery      int
-	ScreenSize   float64
-	Storage      int
-	Camera       int
-	Price        int
-	Image        []string
+	ID         uint
+	ProductID  uint
+	Product    Product
+	SKU        string
+	QtyInStock int
+	Price      float64 
+	InStock    bool    
+	Color      string  
+	Size       string  
+	Rating     float64 
+	Image         []string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }

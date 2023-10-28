@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
@@ -130,18 +131,78 @@ func (c *productDatabase) DeleteProduct(id int) error {
 	err := c.DB.Exec(query, id).Error
 	return err
 }
+func (c *productDatabase) ListAllProduct(queryParams helperstruct.QueryParams) ([]response.Product, error) {
+	var products []response.Product
+	getProductDetails := `SELECT p.product_name AS name,
+		p.description,
+		p.brand,
+		c.category_name
+		 FROM products p JOIN categories c ON p.category_id=c.id `
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		getProductDetails = fmt.Sprintf("%s WHERE LOWER(%s) LIKE '%%%s%%'", getProductDetails, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			getProductDetails = fmt.Sprintf("%s ORDER BY %s DESC", getProductDetails, queryParams.SortBy)
+		} else {
+			getProductDetails = fmt.Sprintf("%s ORDER BY %s ASC", getProductDetails, queryParams.SortBy)
+		}
+	} else {
+		getProductDetails = fmt.Sprintf("%s ORDER BY p.created_at DESC", getProductDetails)
+	}
+	//to set the page number and the qty that need to display in a single responce
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		getProductDetails = fmt.Sprintf("%s LIMIT %d OFFSET %d", getProductDetails, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		getProductDetails = fmt.Sprintf("%s LIMIT 10 OFFSET 0", getProductDetails)
+	}
+
+	fmt.Println(getProductDetails)
+	err := c.DB.Raw(getProductDetails).Scan(&products).Error
+	if err != nil {
+		return []response.Product{}, err
+	}
+	return products, nil
+}
+
+func (c *productDatabase) DisplayAProduct(id int) (response.Product, error) {
+	var product response.Product
+	query := `SELECT p.product_name,p.description,p.brand,c.category_name FROM products p 
+		JOIN categories c ON p.category_id=c.id WHERE p.id=$1`
+	err := c.DB.Raw(query, id).Scan(&product).Error
+	if err != nil {
+		return response.Product{}, err
+	}
+	if product.Id == 0 {
+		return response.Product{}, fmt.Errorf("there is no such product")
+	}
+	return product, err
+}
+
+
+
+
+
+
+
+
+
+//-------------------------------------Product Item--------------------------------------------
+
 func (c *productDatabase) AddProductitem(productItem helperstruct.ProductItem) (response.ProductItem, error) {
 	var newProductItem response.ProductItem
 	query := `INSERT INTO product_items (
-		product_id,sku,qty_in_stock,price,in_stock,color,size,rating,created_at)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,NOW()
-	RETURNING id,product_id,sku,qty_in_stock,price,in_stock,color,size,rating,created_at )
+		product_id, sku, qty_in_stock, price, in_stock, color, size, rating, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+		RETURNING id, product_id, sku, qty_in_stock, price, in_stock, color, size, rating, created_at
 	`
 	err := c.DB.Raw(query, productItem.Product_id, productItem.Sku, productItem.Qty, productItem.Price, productItem.Instock, productItem.Color, productItem.Size, productItem.Rating).Scan(&newProductItem).Error
 
 	return newProductItem, err
-
 }
+
 func (c *productDatabase) UpdateProductItem(id int, product helperstruct.ProductItem) (response.ProductItem, error) {
 	var updatedProductItem response.ProductItem
 // used product for productitem check that
@@ -182,7 +243,7 @@ func (c*productDatabase) DisplayAproductitem(id int)(response.ProductItem,error)
 	if err != nil {
 		return response.ProductItem{}, err
 	}
-	if productItem.Id == 0 {
+	if productItem.ID == 0 {
 		return response.ProductItem{}, fmt.Errorf("there is no such product item")
 	}
 	getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
@@ -192,3 +253,40 @@ func (c*productDatabase) DisplayAproductitem(id int)(response.ProductItem,error)
 	}
 	return productItem, nil
 }
+
+func (c *productDatabase) DisaplyaAllProductItems(queryParams helperstruct.QueryParams) ([]response.ProductItem, error) {
+	var productItems []response.ProductItem
+	getProductItemDetails := `SELECT p.product_name,
+		p.description,
+		p.brand,
+		c.category_name, 
+		pi.*
+		FROM products p 
+		JOIN categories c ON p.category_id=c.id 
+		JOIN product_items pi ON p.id=pi.product_id`
+
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		getProductItemDetails = fmt.Sprintf("%s WHERE LOWER(%s) LIKE '%%%s%%'", getProductItemDetails, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			getProductItemDetails = fmt.Sprintf("%s ORDER BY %s DESC", getProductItemDetails, queryParams.SortBy)
+		} else {
+			getProductItemDetails = fmt.Sprintf("%s ORDER BY %s ASC", getProductItemDetails, queryParams.SortBy)
+		}
+	} else {
+		getProductItemDetails = fmt.Sprintf("%s ORDER BY p.created_at DESC", getProductItemDetails)
+	}
+	//to set the page number and the qty that need to display in a single responce
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		getProductItemDetails = fmt.Sprintf("%s LIMIT %d OFFSET %d", getProductItemDetails, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		getProductItemDetails = fmt.Sprintf("%s LIMIT 10 OFFSET 0", getProductItemDetails)
+	}
+
+	err := c.DB.Raw(getProductItemDetails).Scan(&productItems).Error
+	return productItems, err
+}
+

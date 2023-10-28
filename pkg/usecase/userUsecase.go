@@ -56,7 +56,7 @@ func (c *userUseCase) UserLogin(ctx context.Context, user helperstruct.LoginReq)
 	}
 	otp := controller.GenerateOTP()
 	controller.SendOTP(user, otp)
-
+  log.Println(otp)
 	err = userStoreOTP(c, user.Email, otp)
 	if err != nil {
 		return err
@@ -71,18 +71,18 @@ func (c *userUseCase) VerifyOTP(otp string) (string, error) {
 	if !res {
 		return "", errors.New("error in verifying otp")
 	}
+	log.Println(id)
 
 	claims := jwt.MapClaims{
-		"usersId": id,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"id":  id,
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString([]byte("secret"))
 	if err != nil {
 		return "", err
 	}
-	log.Printf(ss)
-	
+     fmt.Println(ss)
 	return ss, nil
 
 }

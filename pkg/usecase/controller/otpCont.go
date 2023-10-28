@@ -24,7 +24,7 @@ func GenerateOTP() string {
 func SendOTP(email helperstruct.LoginReq, otp string) error {
 	// Create a new message.
 	message := gomail.NewMessage()
-	message.SetHeader("From", "isamecommerce@gmail.com")
+	message.SetHeader("From", "sidx141202@gmail.com")
 	message.SetHeader("To", email.Email)
 	message.SetHeader("Subject", "OTP Verification")
 
@@ -32,7 +32,7 @@ func SendOTP(email helperstruct.LoginReq, otp string) error {
 	message.SetBody("text/plain", "This will be expired in 10 minutes\nYour OTP is: "+otp)
 
 	// Create an instance of the SMTP sender.
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, "isamecommerce@gmail.com", "cduibigcwkhizhzz")
+	dialer := gomail.NewDialer("smtp.gmail.com", 587, "sidx141202@gmail.com", "yhlm wzqg wobt deww")
 
 	// Send the email message.
 	if err := dialer.DialAndSend(message); err != nil {
