@@ -301,3 +301,84 @@ func (cr *UserHandler) UserEditProfile(c *gin.Context) {
 		Errors:     nil,
 	})
 }
+func (u *UserHandler) ChangePassword(c *gin.Context) {
+	var user helperstruct.Email
+	err := c.Bind(&user)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "failed to read the request",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	err = u.userUsecase.ChangePassword( user)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "failed to enter email",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "otp send successfully,  Please enter otp",
+		Data:       nil,
+		Errors:     nil,
+	})
+	return
+
+}
+func (u *UserHandler) VerifyForPassword(c *gin.Context) {
+
+	Id, err := handlerutils.GetUserIdFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find Id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	var otp helperstruct.OTP
+
+	err = c.Bind(&otp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "failed to read the request",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	var newpassword helperstruct.UpdatePassword
+	 err = u.userUsecase.VerfiyForChangePassword(otp.Code,Id,newpassword)
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "failed to change PasswordN",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Password Updated Successfully",
+		Data:       nil,
+		Errors:     nil,
+	})
+
+
+	return
+
+}

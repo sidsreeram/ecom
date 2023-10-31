@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
@@ -26,13 +28,22 @@ func (c *productDatabase) CreateCategory(category helperstruct.Category) (respon
 func (c *productDatabase) UpdateCategory(category helperstruct.Category, id int) (response.Category, error) {
 	var UpdateCategory response.Category
 	query := `UPDATE categories SET category_name=$1 ,updated_at=NOW() WHERE EXISTS (SELECT 1 FROM categories WHERE ID =$2)RETURNING id,category_name`
+
+	// Check if the updated category name is unique.
+	if err := c.DB.Exec("SELECT 1 FROM categories WHERE category_name = $1 AND id != $2", category.Name, id).Error; err != nil {
+		return response.Category{}, errors.New("Category name must be unique")
+	}
+
+	// Update the category.
 	err := c.DB.Raw(query, category.Name, id).Scan(&UpdateCategory).Error
 	if err != nil {
 		return response.Category{}, err
 	}
+
 	if UpdateCategory.Id == 0 {
 		return response.Category{}, fmt.Errorf("No such category")
 	}
+
 	return response.Category{}, err
 }
 func (c *productDatabase) DeleteCategory(id int) error {
@@ -181,14 +192,6 @@ func (c *productDatabase) DisplayAProduct(id int) (response.Product, error) {
 	return product, err
 }
 
-
-
-
-
-
-
-
-
 //-------------------------------------Product Item--------------------------------------------
 
 func (c *productDatabase) AddProductitem(productItem helperstruct.ProductItem) (response.ProductItem, error) {
@@ -205,7 +208,7 @@ func (c *productDatabase) AddProductitem(productItem helperstruct.ProductItem) (
 
 func (c *productDatabase) UpdateProductItem(id int, product helperstruct.ProductItem) (response.ProductItem, error) {
 	var updatedProductItem response.ProductItem
-// used product for productitem check that
+	// used product for productitem check that
 	query := `
 		UPDATE product_items
 		SET product_id = $2, sku = $3, qty_in_stock = $4, price = $5, in_stock = $6, color = $7, size = $8, rating = $9
@@ -213,11 +216,11 @@ func (c *productDatabase) UpdateProductItem(id int, product helperstruct.Product
 		RETURNING id, product_id, sku, qty_in_stock, price, in_stock, color, size, rating, created_at
 	`
 
-	err := c.DB.Raw(query,id,product.Product_id, product.Sku, product.Qty, product.Price, product.Instock, product.Color, product.Size, product.Rating).Scan(&updatedProductItem).Error
+	err := c.DB.Raw(query, id, product.Product_id, product.Sku, product.Qty, product.Price, product.Instock, product.Color, product.Size, product.Rating).Scan(&updatedProductItem).Error
 
 	return updatedProductItem, err
 }
-func(c*productDatabase) DeleteProductItem(id int)error{
+func (c *productDatabase) DeleteProductItem(id int) error {
 	var exists bool
 	query1 := `SELECT exists(SELECT 1 FROM product_items where id=?)`
 	c.DB.Raw(query1, id).Scan(&exists)
@@ -228,9 +231,9 @@ func(c*productDatabase) DeleteProductItem(id int)error{
 	err := c.DB.Exec(query, id).Error
 	return err
 }
-func (c*productDatabase) DisplayAproductitem(id int)(response.ProductItem,error){
+func (c *productDatabase) DisplayAproductitem(id int) (response.ProductItem, error) {
 	var productItem response.ProductItem
-	query:=`SELECT p.product_name,
+	query := `SELECT p.product_name,
 	p.description,
 	p.brand,
 	c.category_name, 
@@ -243,14 +246,17 @@ func (c*productDatabase) DisplayAproductitem(id int)(response.ProductItem,error)
 	if err != nil {
 		return response.ProductItem{}, err
 	}
+	log.Println("aeera")
 	if productItem.ID == 0 {
 		return response.ProductItem{}, fmt.Errorf("there is no such product item")
 	}
-	getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
-	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
-	if err != nil {
-		return response.ProductItem{}, err
-	}
+
+	log.Println("adsdfa")
+	// getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
+	// err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
+	// if err != nil {
+	// 	return response.ProductItem{}, err
+	// }
 	return productItem, nil
 }
 
@@ -289,4 +295,3 @@ func (c *productDatabase) DisaplyaAllProductItems(queryParams helperstruct.Query
 	err := c.DB.Raw(getProductItemDetails).Scan(&productItems).Error
 	return productItems, err
 }
-

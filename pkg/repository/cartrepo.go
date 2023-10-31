@@ -131,14 +131,15 @@ func (c *cartDatabase) RemoveFromCart(userId, productId int) error {
 	}
 	if qty == 1 {
 		deleteitem := `DELETE FROM cart_items WHERE carts_id=$1 AND product_item_id=$2`
-		err := tx.Raw(deleteitem, cartId, productId).Error
+		err := tx.Exec(deleteitem, cartId, productId).Error
+		fmt.Println("eeeee")
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
 	} else {
 		updateQty := `UPDATE cart_items SET quantity=cart_items.quantity-1 WHERE carts_id=$1 AND product_item_id=$2`
-		err = tx.Raw(updateQty, cartId, productId).Error
+		err = tx.Exec(updateQty, cartId, productId).Error
 		if err != nil {
 			tx.Rollback()
 			return err

@@ -18,5 +18,6 @@ type UserRepository interface {
 	UpdateAddress(id, addressId int, address helperstruct.Address) error
 	ViewProfile(id int) (response.UserData, error)
 	UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error)
-
+	FindPassword(id int) (string, error)
+	UpdatePassword(id int, newPassword string) error
 }

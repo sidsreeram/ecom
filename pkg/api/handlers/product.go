@@ -43,8 +43,8 @@ func (cr *ProductHandler) CreateCategory(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusCreated, response.Response{
-		StatusCode: 201,
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
 		Message:    "Category Created Successfully",
 		Data:       Newcategory,
 		Errors:     nil,
@@ -61,6 +61,7 @@ func (cr *ProductHandler) UpdateCategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	paramsId := c.Param("id")
 	id, err := strconv.Atoi(paramsId)
@@ -81,6 +82,7 @@ func (cr *ProductHandler) UpdateCategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.Response{
@@ -100,6 +102,7 @@ func (cr *ProductHandler) DeleteCategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	err = cr.ProductUsecase.DeleteCategory(id)
 	if err != nil {
@@ -109,6 +112,7 @@ func (cr *ProductHandler) DeleteCategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err,
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
@@ -126,6 +130,7 @@ func (cr *ProductHandler) ListCategories(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
@@ -144,6 +149,7 @@ func (cr *ProductHandler) DisplayACategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	category, err := cr.ProductUsecase.DisplayACategory(id)
 	if err != nil {
@@ -153,6 +159,7 @@ func (cr *ProductHandler) DisplayACategory(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
@@ -172,6 +179,7 @@ func (cr *ProductHandler) AddProduct(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	Newproduct, err := cr.ProductUsecase.AddProduct(product)
 	if err != nil {
@@ -183,8 +191,8 @@ func (cr *ProductHandler) AddProduct(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusCreated, response.Response{
-		StatusCode: 201,
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
 		Message:    "New Product added Successfully",
 		Data:       Newproduct,
 		Errors:     nil,
@@ -201,6 +209,7 @@ func (cr *ProductHandler) UpdateProduct(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	paramsId := c.Param("id")
 	id, err := strconv.Atoi(paramsId)
@@ -221,6 +230,7 @@ func (cr *ProductHandler) UpdateProduct(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.Response{
@@ -240,6 +250,7 @@ func (cr *ProductHandler) DeleteProduct(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	err = cr.ProductUsecase.DeleteProduct(id)
 	if err != nil {
@@ -249,6 +260,7 @@ func (cr *ProductHandler) DeleteProduct(c *gin.Context) {
 			Data:       nil,
 			Errors:     err,
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
@@ -329,6 +341,7 @@ func (cr *ProductHandler) AddProductitem(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	newProductItem, err := cr.ProductUsecase.AddProductitem(productItem)
 	if err != nil {
@@ -340,8 +353,8 @@ func (cr *ProductHandler) AddProductitem(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusCreated, response.Response{
-		StatusCode: 201,
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
 		Message:    "New Product-item added Successfully",
 		Data:       newProductItem,
 		Errors:     nil,
@@ -361,6 +374,7 @@ func (cr *ProductHandler) UpdateProductitem(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	paramsId := c.Param("id")
 	id, err := strconv.Atoi(paramsId)
@@ -381,6 +395,7 @@ func (cr *ProductHandler) UpdateProductitem(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.Response{
@@ -402,6 +417,7 @@ func (cr *ProductHandler) DeleteProductItem(c *gin.Context) {
 			Data:       nil,
 			Errors:     err.Error(),
 		})
+		return
 	}
 	err = cr.ProductUsecase.DeleteProductItem(id)
 	if err != nil {
@@ -411,6 +427,7 @@ func (cr *ProductHandler) DeleteProductItem(c *gin.Context) {
 			Data:       nil,
 			Errors:     err,
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,

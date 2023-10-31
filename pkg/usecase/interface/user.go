@@ -16,4 +16,6 @@ type UserUseCase interface {
 	UpdateAddress(id, addressId int, address helperstruct.Address) error
 	ViewProfile(id int)(response.UserData, error)
 	UpdateProfile(id int,updatingdetails helperstruct.UserReq)(response.UserData,error)
+	ChangePassword(user helperstruct.Email) error
+	VerfiyForChangePassword(otp string, id int, passwords helperstruct.UpdatePassword) error
 }

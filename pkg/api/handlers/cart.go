@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -31,9 +30,7 @@ func (cr *CartHandler) AddToCart(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("hiiii")
 	paramID := c.Param("product_item_id")
-	fmt.Println(paramID)
 	if paramID == "" {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -83,7 +80,7 @@ func (cr *CartHandler) RemoveFromCart(c *gin.Context) {
 		})
 		return
 	}
-	paramID := c.Param("Product_item_id")
+	paramID := c.Param("product_item_id")
 	productId, err := strconv.Atoi(paramID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -113,8 +110,8 @@ func (cr *CartHandler) RemoveFromCart(c *gin.Context) {
 	})
 
 }
-func (cr *CartHandler) ListCart(c*gin.Context){
-	userId,err:=handlerutils.GetUserIdFromContext(c)
+func (cr *CartHandler) ListCart(c *gin.Context) {
+	userId, err := handlerutils.GetUserIdFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -124,7 +121,7 @@ func (cr *CartHandler) ListCart(c*gin.Context){
 		})
 		return
 	}
-	listcart,err :=cr.cartusecase.ListCart(userId)
+	listcart, err := cr.cartusecase.ListCart(userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,

@@ -142,8 +142,8 @@ func (c *userDatabase) AddAddress(id int, address helperstruct.Address) error {
 func (c *userDatabase) UpdateAddress(id, addressId int, address helperstruct.Address) error {
 	//Check if the new address is being set as default
 	if address.IsDefault { //Change the default address into false
-		changeDefault := `UPDATE addresses SET is_default = $1 WHERE users_id=$2 AND is_default=$3`
-		err := c.DB.Exec(changeDefault, false, id, true).Error
+		changeDefault := `UPDATE addresses SET is_default = $1 WHERE id=$2 AND is_default=$3`
+		err := c.DB.Exec(changeDefault, true, addressId, false).Error
 
 		if err != nil {
 			return err
@@ -178,4 +178,15 @@ query:=`UPDATE users SET name=$1,email=$2,mobile=$3 WHERE id=$4 RETURNING name,e
 err:=c.DB.Raw(query,updatedetails.Name,updatedetails.Email,updatedetails.Mobile,id).Scan(&profile).Error
 fmt.Printf("updated Profile")
 return profile,err
+}
+func (c *userDatabase) FindPassword(id int) (string, error) {
+	var orginalPassword string
+	err := c.DB.Raw("SELECT password FROM users WHERE id=?", id).Scan(&orginalPassword).Error
+	return orginalPassword, err
+}
+
+func (c *userDatabase) UpdatePassword(id int, newPassword string) error {
+	updatePassword := `UPDATE users SET password=$1 WHERE id=$2`
+	err := c.DB.Exec(updatePassword, newPassword, id).Error
+	return err
 }

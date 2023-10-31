@@ -14,7 +14,10 @@ func NewServerHTTP(
 	userHandler *handlers.UserHandler,
 	adminHandler *handlers.AdminHandler,
 	productHandler *handlers.ProductHandler,
-	carthandler *handlers.CartHandler) *ServerHTTP {
+	carthandler *handlers.CartHandler,
+	orderhandler *handlers.OrderHandler,
+	wishlisthandler *handlers.WishlistHandler) *ServerHTTP {
+ 
 	engine := gin.New()
 	engine.Use(gin.Logger())
 
@@ -58,9 +61,27 @@ func NewServerHTTP(
 			{
 				cart.POST("/addtocart/:product_item_id", carthandler.AddToCart)
 				cart.PATCH("/remove/:product_item_id", carthandler.RemoveFromCart)
-				cart.GET("/cart/", carthandler.ListCart)
+				cart.GET("/cart", carthandler.ListCart)
 			}
-
+			order:=user.Group("/order")
+			{
+				order.POST("/orderall/:payment_id",orderhandler.OrderAll)
+				order.PATCH("/cancel/:order_id",orderhandler.UserCancelOrder)
+				order.GET("/view/:order_id",orderhandler.ListAorder)
+				order.GET("/viewall",orderhandler.ListAllorder)
+				order.PATCH("/return/:order_id",orderhandler.ReturnOrder)
+			}
+            wishlist:=user.Group("/wishlist")
+			{
+				wishlist.POST("/add/:product_item_id",wishlisthandler.AddToWishlist)
+				wishlist.DELETE("/remove/:product_item_id",wishlisthandler.RemoveFromWishlist)
+				wishlist.GET("/view",wishlisthandler.ViewAllWishlistItems)
+			}
+			passwrod:=user.Group("/changepassword")
+			{
+				passwrod.POST("/change",userHandler.ChangePassword)
+				passwrod.POST("/verify",userHandler.VerifyForPassword)
+			}
 		}
 
 	}
@@ -83,19 +104,19 @@ func NewServerHTTP(
 		}
 		admincategory := admin.Group("/category")
 		{
-			admincategory.POST("/addcategory", productHandler.CreateCategory)
-			admincategory.PATCH("/updatecategory/:id", productHandler.UpdateCategory)
-			admincategory.DELETE("/deletecategory/:category_id", productHandler.DeleteCategory)
-			admincategory.GET("listallcategory", productHandler.ListCategories)
-			admincategory.GET("/showcategory/:category_id", productHandler.DisplayACategory)
+			admincategory.POST("/add", productHandler.CreateCategory)
+			admincategory.PATCH("/update/:id", productHandler.UpdateCategory)
+			admincategory.DELETE("/delete/:id", productHandler.DeleteCategory)
+			admincategory.GET("listall", productHandler.ListCategories)
+			admincategory.GET("/show/:id", productHandler.DisplayACategory)
 		}
 		adminProduct := admin.Group("/product")
 		{
-			adminProduct.POST("/addproduct", productHandler.AddProduct)
+			adminProduct.POST("/add", productHandler.AddProduct)
 			adminProduct.PATCH("/update/:id", productHandler.UpdateProduct)
 			adminProduct.DELETE("/delete/:id", productHandler.DeleteProduct)
 			adminProduct.GET("/allproduct", productHandler.ListAllProduct)
-			adminProduct.GET("/product/:id", productHandler.DisplayAProduct)
+			adminProduct.GET("/show/:id", productHandler.DisplayAProduct) //
 		}
 		adminProductitem := admin.Group("/product-item")
 		{
@@ -104,6 +125,10 @@ func NewServerHTTP(
 			adminProductitem.DELETE("delete/:id", productHandler.DeleteProductItem)
 			adminProductitem.GET("/allproductitem", productHandler.DisaplyaAllProductItems)
 			adminProductitem.GET("productitem/:id", productHandler.DisplayAproductitem)
+		}
+		order:=admin.Group("/order")
+		{
+			order.PATCH("/update",orderhandler.UpdateOrder)
 		}
 	}
 	return &ServerHTTP{engine: engine}

@@ -24,3 +24,10 @@ type Address struct {
 	Pincode      int    `json:"pincode " `
 	IsDefault    bool   `json:"isdefault" `
 }
+type UpdatePassword struct {
+    OldPassword string `json:"oldpassword" `
+    NewPassword string `json:"newpassword" `
+}
+type Email struct {
+	Email string `json:"email"`
+}

@@ -4,7 +4,7 @@ type DisplayCart struct {
 	Productname  string
 	Brand        string
 	Color        string
-    Size          int
+    Size          string
 	Quantity     uint
 	PricePerUnit float64
 	Total        float64

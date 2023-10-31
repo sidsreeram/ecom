@@ -12,20 +12,26 @@ import (
 	usecase "github.com/ECOMMERCE_PROJECT/pkg/usecase"
 )
 
-func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
+func InitializeAPI(config.Config) (*http.ServerHTTP, error) {
 	wire.Build(db.ConnectDatabase,
 		repository.NewUserRepository,
 		repository.NewAdminRepository,
 		repository.NewProductRepostiory,
 		repository.NewCartRepository,
+		repository.NewOrderRepository,
+		repository.NewWishlistRepository,
 		usecase.NewUserUseCase,
 		usecase.NewAdminUsecase,
 		usecase.NewProductUsecase,
 		usecase.NewCartUsecase,
+		usecase.NewOrderUsecase,
+		usecase.NewWishlistUsecase,
 		handlers.NewUserHandelr,
 		handlers.NewAdminHandler,
 		handlers.NewProductHandler,
 		handlers.NewCartHandler,
+		handlers.NewOrderHandler,
+		handlers.NewWishlistHandler,
 		http.NewServerHTTP,
 	)
 	return &http.ServerHTTP{}, nil
