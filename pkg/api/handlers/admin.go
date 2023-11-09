@@ -21,7 +21,6 @@ func NewAdminHandler(adminUseCae services.AdminUsecase) *AdminHandler {
 	}
 }
 
-
 func (cr *AdminHandler) CreateAdmin(c *gin.Context) {
 	var adminData helperstruct.CreateAdmin
 	err := c.Bind(&adminData)
@@ -64,7 +63,6 @@ func (cr *AdminHandler) CreateAdmin(c *gin.Context) {
 		Errors:     nil,
 	})
 }
-
 
 func (cr *AdminHandler) AdminLoging(c *gin.Context) {
 	var admin helperstruct.LoginReq
@@ -181,49 +179,137 @@ func (cr *AdminHandler) UnblockUser(c *gin.Context) {
 		Errors:     nil,
 	})
 }
-func (cr *AdminHandler) FindUser(c *gin.Context){
-	paramsID :=c.Param("user_id")
-	id,err:=strconv.Atoi(paramsID)
+func (cr *AdminHandler) FindUser(c *gin.Context) {
+	paramsID := c.Param("user_id")
+	id, err := strconv.Atoi(paramsID)
 
-	if err!=nil{
-		c.JSON(http.StatusBadRequest,response.Response{
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message: "Bind failed",
+			Message:    "Bind failed",
 		})
 	}
-	user, err:=cr.adminUseCase.FindUser(id)
-	if err!=nil{
-		c.JSON(http.StatusBadRequest,response.Response{
+	user, err := cr.adminUseCase.FindUser(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message: "Can't find User",
-			Data: nil,
-			Errors: err,
+			Message:    "Can't find User",
+			Data:       nil,
+			Errors:     err,
 		})
 	}
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "User found",
-		Data: user,
-		Errors: nil,
+		Message:    "User found",
+		Data:       user,
+		Errors:     nil,
 	})
 }
 func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
-    
-    userList, err := cr.adminUseCase.ListAllUsers()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, response.Response{
-            StatusCode: 500,
-            Message:    "Error listing users",
-            Data:       nil,
-            Errors:     err.Error(),
-        })
-        return
-    }
 
-    c.JSON(http.StatusOK, response.Response{
-        StatusCode: 200,
-        Message:    "List of all users",
-        Data:       userList,
-        Errors:     nil,
-    })
+	userList, err := cr.adminUseCase.ListAllUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.Response{
+			StatusCode: 500,
+			Message:    "Error listing users",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "List of all users",
+		Data:       userList,
+		Errors:     nil,
+	})
+}
+func (cr *AdminHandler) GetDashBoard(c*gin.Context){
+	DashBoard, err := cr.adminUseCase.GetDashBoard()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.Response{
+			StatusCode: 500,
+			Message:    "Error in getting Admin Dashboard",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Admin DashBoard",
+		Data:       DashBoard,
+		Errors:     nil,
+	})
+
+}
+func(cr*AdminHandler)ViewDailySalesReport(c*gin.Context){
+	sales ,err:=cr.adminUseCase.ViewDailySalesReport()
+	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
+		StatusCode:400 ,
+		Message: "Can't get daily sales report",
+		Data: nil,
+		Errors: err.Error(),
+	})
+     return
+	}
+	c.JSON(http.StatusOK,response.Response{
+		StatusCode: 200,
+		Message: "daily sales report :",
+		Data: sales,
+		Errors: nil,
+	})
+}
+func(cr*AdminHandler)ViewWeelySalesReport(c*gin.Context){
+	sales ,err:=cr.adminUseCase.ViewWeeklySalesReport()
+	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
+		StatusCode:400 ,
+		Message: "Can't get daily sales report",
+		Data: nil,
+		Errors: err.Error(),
+	})
+     return
+	}
+	c.JSON(http.StatusOK,response.Response{
+		StatusCode: 200,
+		Message: "weekly sales report :",
+		Data: sales,
+		Errors: nil,
+	})
+}
+func(cr*AdminHandler)ViewMonthlySalesReport(c*gin.Context){
+	sales ,err:=cr.adminUseCase.ViewMonthlySalesReport()
+	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
+		StatusCode:400 ,
+		Message: "Can't get daily sales report",
+		Data: nil,
+		Errors: err.Error(),
+	})
+     return
+	}
+	c.JSON(http.StatusOK,response.Response{
+		StatusCode: 200,
+		Message: "monthly sales report :",
+		Data: sales,
+		Errors: nil,
+	})
+}
+func(cr*AdminHandler)ViewYearlySalesReport(c*gin.Context){
+	sales ,err:=cr.adminUseCase.ViewYearlySalesReport()
+	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
+		StatusCode:400 ,
+		Message: "Can't get daily sales report",
+		Data: nil,
+		Errors: err.Error(),
+	})
+     return
+	}
+	c.JSON(http.StatusOK,response.Response{
+		StatusCode: 200,
+		Message: "yearly sales report :",
+		Data: sales,
+		Errors: nil,
+	})
 }

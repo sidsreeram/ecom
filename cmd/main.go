@@ -17,7 +17,7 @@ func main() {
     }
    
 
-    server, diErr := di.InitializeAPI1(config)
+    server, diErr := di.InitializeAPI(config)
     if diErr != nil {
         log.Fatal("Cannot initialize API", diErr)
     }

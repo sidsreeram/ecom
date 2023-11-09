@@ -14,4 +14,9 @@ type AdminRepository interface {
 	UnblockUser(id int) error
 	FindUser(id int)(response.UserDetails, error) 
 	ListAllUsers() ([]response.UserDetails, error)
+	GetDashBoard() (response.DashBoard, error)
+	ViewDailySalesReport() ([]response.SalesReport, error)
+	ViewWeeklySalesReport() ([]response.SalesReport, error)
+	ViewMonthlySalesReport() ([]response.SalesReport, error)
+	ViewYearlySalesReport() ([]response.SalesReport, error)
 }

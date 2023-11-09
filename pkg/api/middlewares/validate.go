@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"fmt"
-	"log"
+	
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -60,7 +60,6 @@ type InvalidTokenError struct {
   
 	  return []byte("secret"), nil
 	})
-	log.Println(err)
 	if err != nil {
 	  return 0, &InvalidTokenError{err}
 	}

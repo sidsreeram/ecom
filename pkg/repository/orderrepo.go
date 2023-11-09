@@ -55,11 +55,11 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 	// setting order id for the order
 	var order domain.Orders
 	setorder := `
-    INSERT INTO orders(user_id, order_date, payment_type_id, shipping_address, order_total,order_status_id) 
-    VALUES($1, NOW(), $2, $3, $4, 1) 
-    RETURNING *
-`
-	err = tx.Raw(setorder, id, paymentTypeId, addressId, cart.Total).Scan(&order).Error
+    INSERT INTO orders(user_id, order_date, payment_type_id, shipping_address, order_total, order_status_id, coupon_id)
+	VALUES($1, NOW(), $2, $3, $4, 1,$5)
+	RETURNING *
+               `
+	err = tx.Raw(setorder, id, paymentTypeId, addressId, cart.Total,cart.CouponId).Scan(&order).Error
 	if err != nil {
 		tx.Rollback()
 		return domain.Orders{}, err
@@ -199,17 +199,17 @@ func (c *OrderDatabase) ReturnOrder(userId, OrderId int) (int, error) {
 	}
 	return order.OrderTotal, nil
 }
-func (c *OrderDatabase) UpdateOrder(updateorder helperstruct.UpdateOrder)error{
-	 var isexists bool
-	 query:=`SELECT EXISTS (SELECT 1 FROM orders WHERE id=?)`
-	 err:=c.DB.Raw(query,updateorder.OrderId).Scan(&isexists).Error
-	 if err!=nil{
+func (c *OrderDatabase) UpdateOrder(updateorder helperstruct.UpdateOrder) error {
+	var isexists bool
+	query := `SELECT EXISTS (SELECT 1 FROM orders WHERE id=?)`
+	err := c.DB.Raw(query, updateorder.OrderId).Scan(&isexists).Error
+	if err != nil {
 		return err
-	 }
-	 if !isexists{
+	}
+	if !isexists {
 		return fmt.Errorf("order not found with this id")
-	 }
-	 updateOrderQry := `UPDATE orders SET order_status_id=$1 WHERE id=$2`
+	}
+	updateOrderQry := `UPDATE orders SET order_status_id=$1 WHERE id=$2`
 	err = c.DB.Exec(updateOrderQry, updateorder.OrderStatusID, updateorder.OrderId).Error
 	if err != nil {
 		return err

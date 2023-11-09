@@ -16,8 +16,10 @@ func NewServerHTTP(
 	productHandler *handlers.ProductHandler,
 	carthandler *handlers.CartHandler,
 	orderhandler *handlers.OrderHandler,
+	couponhandelr *handlers.CouponHandler,
+	paymenthandler *handlers.PaymentHandler,
 	wishlisthandler *handlers.WishlistHandler) *ServerHTTP {
- 
+
 	engine := gin.New()
 	engine.Use(gin.Logger())
 
@@ -63,25 +65,33 @@ func NewServerHTTP(
 				cart.PATCH("/remove/:product_item_id", carthandler.RemoveFromCart)
 				cart.GET("/cart", carthandler.ListCart)
 			}
-			order:=user.Group("/order")
+			order := user.Group("/order")
 			{
-				order.POST("/orderall/:payment_id",orderhandler.OrderAll)
-				order.PATCH("/cancel/:order_id",orderhandler.UserCancelOrder)
-				order.GET("/view/:order_id",orderhandler.ListAorder)
-				order.GET("/viewall",orderhandler.ListAllorder)
-				order.PATCH("/return/:order_id",orderhandler.ReturnOrder)
+				order.POST("/orderall/:payment_id", orderhandler.OrderAll)
+				order.PATCH("/cancel/:order_id", orderhandler.UserCancelOrder)
+				order.GET("/view/:order_id", orderhandler.ListAorder)
+				order.GET("/viewall", orderhandler.ListAllorder)
+				order.PATCH("/return/:order_id", orderhandler.ReturnOrder)
 			}
-            wishlist:=user.Group("/wishlist")
+			coupon := user.Group("coupon")
 			{
-				wishlist.POST("/add/:product_item_id",wishlisthandler.AddToWishlist)
-				wishlist.DELETE("/remove/:product_item_id",wishlisthandler.RemoveFromWishlist)
-				wishlist.GET("/view",wishlisthandler.ViewAllWishlistItems)
+				coupon.PATCH("apply/:code",couponhandelr.ApplyCoupon)
+				coupon.PATCH("remove",couponhandelr.RemoveCoupon)
 			}
-			passwrod:=user.Group("/changepassword")
+			wishlist := user.Group("/wishlist")
 			{
-				passwrod.POST("/change",userHandler.ChangePassword)
-				passwrod.POST("/verify",userHandler.VerifyForPassword)
+				wishlist.POST("/add/:product_item_id", wishlisthandler.AddToWishlist)
+				wishlist.DELETE("/remove/:product_item_id", wishlisthandler.RemoveFromWishlist)
+				wishlist.GET("/view", wishlisthandler.ViewAllWishlistItems)
 			}
+			passwrod := user.Group("/changepassword")
+			{
+				passwrod.POST("/change", userHandler.ChangePassword)
+				passwrod.POST("/verify", userHandler.VerifyForPassword)
+			}
+			user.GET("order/onlinepayment/pay/:orderId",paymenthandler.CreateRazorpayPayment)
+			// user.GET("payment-handler", paymenthandler.)
+			
 		}
 
 	}
@@ -126,15 +136,32 @@ func NewServerHTTP(
 			adminProductitem.GET("/allproductitem", productHandler.DisaplyaAllProductItems)
 			adminProductitem.GET("productitem/:id", productHandler.DisplayAproductitem)
 		}
-		order:=admin.Group("/order")
+		coupon:=admin.Group("/coupons")
 		{
-			order.PATCH("/update",orderhandler.UpdateOrder)
+			coupon.POST("/add",couponhandelr.AddCoupon)
+			coupon.PATCH("/update/:couponId",couponhandelr.UpdateCoupon)
+			coupon.DELETE("/delete/:couponId",couponhandelr.DeleteCoupon)
+			coupon.GET("/view/:couponId",couponhandelr.ViewAcoupon)
+			coupon.GET("/viewall",couponhandelr.ViewCoupons)
 		}
+		order := admin.Group("/order")
+		{
+			order.PATCH("/update", orderhandler.UpdateOrder)
+		}
+		sales := admin.Group("/sales")
+		{
+			sales.GET("/daily", adminHandler.ViewDailySalesReport)
+			sales.GET("/weekly", adminHandler.ViewWeelySalesReport)
+			sales.GET("/monthly", adminHandler.ViewMonthlySalesReport)
+			sales.GET("/yearly", adminHandler.ViewYearlySalesReport)
+		}
+		admin.GET("/dashboard",adminHandler.GetDashBoard)
 	}
 	return &ServerHTTP{engine: engine}
 
 }
 
 func (s *ServerHTTP) Start() {
+	s.engine.LoadHTMLGlob("../template/*.html")
 	s.engine.Run(":3000")
 }

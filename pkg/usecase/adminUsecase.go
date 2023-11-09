@@ -112,3 +112,28 @@ func (c *adminUseCase) ListAllUsers() ([]response.UserDetails, error) {
 	return userList, nil
 }
 
+func (c *adminUseCase) GetDashBoard() (response.DashBoard, error) {
+	dashBoard, err := c.adminRepo.GetDashBoard()
+	return dashBoard, err
+}
+
+func(c*adminUseCase)ViewDailySalesReport() ([]response.SalesReport, error){
+  salesreport ,err :=c.adminRepo.ViewDailySalesReport()
+  return salesreport ,err
+}
+func(c*adminUseCase)	ViewWeeklySalesReport() ([]response.SalesReport, error){
+	salesreport ,err :=c.adminRepo.ViewWeeklySalesReport()
+	return salesreport ,err
+}
+func(c*adminUseCase)ViewMonthlySalesReport() ([]response.SalesReport, error){
+	salesreport ,err :=c.adminRepo.ViewMonthlySalesReport()
+	return salesreport ,err
+}
+func(c*adminUseCase)ViewYearlySalesReport() ([]response.SalesReport, error){
+	salesreport ,err :=c.adminRepo.ViewYearlySalesReport()
+	return salesreport ,err
+}
+
+
+	
+	

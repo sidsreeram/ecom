@@ -129,3 +129,81 @@ func (c *adminDatabase) ListAllUsers() ([]response.UserDetails, error) {
 
 	return userdetails, nil
 }
+func (c *adminDatabase) GetDashBoard() (response.DashBoard, error) {
+	tx := c.DB.Begin()
+	var dashBoard response.DashBoard
+	getDasheBoard := `SELECT SUM(oi.quantity*oi.price)as Total_Revenue,
+			SUM (oi.quantity)as Total_Products_Selled,
+			COUNT(DISTINCT o.id)as Total_Orders FROM orders o
+			JOIN order_items oi on o.id=oi.orders_id
+			WHERE o.order_status_id=$1`
+	if err := tx.Raw(getDasheBoard, 1).Scan(&dashBoard).Error; err != nil {
+		tx.Rollback()
+		return response.DashBoard{}, err
+	}
+
+	getTotalUsers := `SELECT COUNT(id)AS TotalUsers FROM users`
+	if err := tx.Raw(getTotalUsers).Scan(&dashBoard.TotalUsers).Error; err != nil {
+		tx.Rollback()
+		return response.DashBoard{}, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return response.DashBoard{}, err
+	}
+	return dashBoard, nil
+}
+func (c *adminDatabase) ViewDailySalesReport() ([]response.SalesReport, error) {
+	var sales []response.SalesReport
+	getReports := `SELECT u.name,
+		pt.type AS payment_type,
+		o.order_date,
+		o.order_total 
+		FROM orders o JOIN users u ON u.id=o.user_id 
+		JOIN payment_types pt ON o.payment_type_id= pt.id 
+		WHERE o.order_status_id=1 AND DATE(o.order_date) = CURRENT_DATE`
+	err := c.DB.Raw(getReports).Scan(&sales).Error
+	return sales, err
+}
+
+func (c *adminDatabase) ViewWeeklySalesReport() ([]response.SalesReport, error) {
+	var sales []response.SalesReport
+	getReports := `SELECT u.name,
+		pt.type AS payment_type,
+		o.order_date,
+		o.order_total 
+		FROM orders o JOIN users u ON u.id=o.user_id 
+		JOIN payment_types pt ON o.payment_type_id= pt.id 
+		WHERE o.order_status_id=1 AND EXTRACT(WEEK FROM o.order_date) = EXTRACT(WEEK FROM CURRENT_DATE) AND EXTRACT(YEAR FROM o.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)`
+	err := c.DB.Raw(getReports).Scan(&sales).Error
+	return sales, err
+}
+
+func (c *adminDatabase) ViewMonthlySalesReport() ([]response.SalesReport, error) {
+	var sales []response.SalesReport
+	getReports := `SELECT u.name,
+		pt.type AS payment_type,
+		o.order_date,
+		o.order_total 
+		FROM orders o JOIN users u ON u.id=o.user_id 
+		JOIN payment_types pt ON o.payment_type_id= pt.id 
+		WHERE o.order_status_id=1 AND EXTRACT(MONTH FROM o.order_date) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM o.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)`
+	err := c.DB.Raw(getReports).Scan(&sales).Error
+	return sales, err
+}
+
+
+func (c *adminDatabase) ViewYearlySalesReport() ([]response.SalesReport, error) {
+	var sales []response.SalesReport
+	getReports := `SELECT u.name,
+		pt.type AS payment_type,
+		o.order_date,
+		o.order_total 
+		FROM orders o JOIN users u ON u.id=o.user_id 
+		JOIN payment_types pt ON o.payment_type_id= pt.id 
+		WHERE o.order_status_id=1 AND EXTRACT(YEAR FROM o.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)`
+	err := c.DB.Raw(getReports).Scan(&sales).Error
+	return sales, err
+}
+

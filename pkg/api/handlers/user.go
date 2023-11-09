@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -18,7 +17,7 @@ type UserHandler struct {
 	cartusecase services.CartUseCase
 }
 
-func NewUserHandelr(usecase services.UserUseCase,cartusecase services.CartUseCase) *UserHandler {
+func NewUserHandelr(usecase services.UserUseCase, cartusecase services.CartUseCase) *UserHandler {
 	return &UserHandler{
 		userUsecase: usecase,
 		cartusecase: cartusecase,
@@ -49,15 +48,15 @@ func (u *UserHandler) UserSignUp(c *gin.Context) {
 		return
 	}
 	err = u.cartusecase.CreateCart(userData.Id)
-	if err!=nil{
-		c.JSON(http.StatusBadRequest,response.Response{
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message: "Failed to create Cart",
-			Data: nil,
-			Errors: err.Error(),
+			Message:    "Failed to create Cart",
+			Data:       nil,
+			Errors:     err.Error(),
 		})
 	}
-	
+
 	c.JSON(http.StatusCreated, response.Response{
 		StatusCode: 201,
 		Message:    "user signup Successfully",
@@ -127,9 +126,8 @@ func (u *UserHandler) VerifyLogin(c *gin.Context) {
 		})
 		return
 	}
-	c.SetSameSite(http.SameSiteLaxMode)
-	log.Println("hiiiii ")
-	c.SetCookie("UserAuth", ss, 3600*24*30, "", "", false, true)
+	// c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("UserAuth", ss, 3600*24*30, "/", "localhost", false, false)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
 		Message:    "Login Successfully",
@@ -137,14 +135,12 @@ func (u *UserHandler) VerifyLogin(c *gin.Context) {
 		Errors:     nil,
 	})
 
-	log.Println("byeee ")
 	return
 
 }
 
 func (u *UserHandler) AddAddress(c *gin.Context) {
-	Id, err:= handlerutils.GetUserIdFromContext(c)
-	
+	Id, err := handlerutils.GetUserIdFromContext(c)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -315,7 +311,7 @@ func (u *UserHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	err = u.userUsecase.ChangePassword( user)
+	err = u.userUsecase.ChangePassword(user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -360,7 +356,7 @@ func (u *UserHandler) VerifyForPassword(c *gin.Context) {
 		return
 	}
 	var newpassword helperstruct.UpdatePassword
-	 err = u.userUsecase.VerfiyForChangePassword(otp.Code,Id,newpassword)
+	err = u.userUsecase.VerfiyForChangePassword(otp.Code, Id, newpassword)
 	if err != nil {
 
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -377,7 +373,6 @@ func (u *UserHandler) VerifyForPassword(c *gin.Context) {
 		Data:       nil,
 		Errors:     nil,
 	})
-
 
 	return
 

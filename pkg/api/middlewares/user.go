@@ -50,7 +50,7 @@ func UserAuth(c *gin.Context) {
 	}
 
 	userIdStr := strconv.Itoa(userId)
-	c.SetCookie("userId", userIdStr, 3600, "/", "localhost", false, false)
+	c.SetCookie("userId", userIdStr, 3600, "/", "localhost", false, true)
 
 	c.Next()
 }

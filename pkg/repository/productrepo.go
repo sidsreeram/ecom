@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"log"
+
 	"strings"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
@@ -246,12 +246,11 @@ func (c *productDatabase) DisplayAproductitem(id int) (response.ProductItem, err
 	if err != nil {
 		return response.ProductItem{}, err
 	}
-	log.Println("aeera")
+
 	if productItem.ID == 0 {
 		return response.ProductItem{}, fmt.Errorf("there is no such product item")
 	}
 
-	log.Println("adsdfa")
 	// getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
 	// err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
 	// if err != nil {

@@ -11,4 +11,6 @@ type CouponRepository interface {
 	DeleteCoupon(CouponId int) error
 	ViewAllCoupons()([]domain.Coupons,error)
 	ViewCoupon(couponId int)(domain.Coupons,error)
+	ApplyCoupon(userId int, couponCode string )(int,error)
+	RemoveCoupon(userId int)error
 }

@@ -22,7 +22,7 @@ func (c *CartUseCase) CreateCart(id int) error {
 }
 
 func (c *CartUseCase) AddToCart(productId, userId int) error {
-	err := c.cartRepo.AddtoCart(productId, userId)
+	err := c.cartRepo.AddToCart(productId, userId)
 	return err
 }
 func (c *CartUseCase) RemoveFromCart(userId, productId int) error {

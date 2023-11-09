@@ -18,19 +18,27 @@ func (c *Couponusecase) AddCoupon(coupons helperstruct.Coupons) error {
 	err := c.couponrepository.AddCoupon(coupons)
 	return err
 }
-func (c *Couponusecase) UpdateCoupon(coupons helperstruct.Coupons, CouponId int) (domain.Coupons, error){
-	updatedcoupon,err:=c.couponrepository.UpdateCoupon(coupons,CouponId)
-	return updatedcoupon,err
+func (c *Couponusecase) UpdateCoupon(coupons helperstruct.Coupons, CouponId int) (domain.Coupons, error) {
+	updatedcoupon, err := c.couponrepository.UpdateCoupon(coupons, CouponId)
+	return updatedcoupon, err
 }
-func (c*Couponusecase) DeleteCoupon(CouponId int) error{
-	err:=c.couponrepository.DeleteCoupon(CouponId)
+func (c *Couponusecase) DeleteCoupon(CouponId int) error {
+	err := c.couponrepository.DeleteCoupon(CouponId)
 	return err
 }
-func (c*Couponusecase) ViewAllCoupons()([]domain.Coupons,error){
-	coupons ,err:=c.couponrepository.ViewAllCoupons()
-	return coupons,err
+func (c *Couponusecase) ViewAllCoupons() ([]domain.Coupons, error) {
+	coupons, err := c.couponrepository.ViewAllCoupons()
+	return coupons, err
 }
-func (c*Couponusecase) ViewCoupon(couponId int)(domain.Coupons,error){
-	coupon,err:=c.couponrepository.ViewCoupon(couponId)
-	return coupon,err
+func (c *Couponusecase) ViewCoupon(couponId int) (domain.Coupons, error) {
+	coupon, err := c.couponrepository.ViewCoupon(couponId)
+	return coupon, err
+}
+func (c *Couponusecase) ApplyCoupon(userId int, couponCode string) (int, error) {
+	TotalAmount, err := c.couponrepository.ApplyCoupon(userId, couponCode)
+	return TotalAmount, err
+}
+func (c *Couponusecase) RemoveCoupon(userId int) error {
+	err := c.couponrepository.RemoveCoupon(userId)
+	return err
 }

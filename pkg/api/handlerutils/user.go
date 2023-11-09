@@ -1,7 +1,6 @@
 package handlerutils
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,5 @@ func GetUserIdFromContext(c *gin.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
-	log.Println(userId)
 	return userId, nil
 }

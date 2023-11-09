@@ -17,7 +17,7 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeAPI1(configConfig config.Config) (*api.ServerHTTP, error) {
+func InitializeAPI(configConfig config.Config) (*api.ServerHTTP, error) {
 	gormDB, err := db.ConnectDatabase(configConfig)
 	if err != nil {
 		return nil, err
@@ -37,9 +37,15 @@ func InitializeAPI1(configConfig config.Config) (*api.ServerHTTP, error) {
 	orderRepository := repository.NewOrderRepository(gormDB)
 	orderUsercase := usecase.NewOrderUsecase(orderRepository)
 	orderHandler := handlers.NewOrderHandler(orderUsercase)
+	couponRepository := repository.NewCouponRepository(gormDB)
+	couponusecase := usecase.NewCouponUsecase(couponRepository)
+	couponHandler := handlers.NewCouponHandler(couponusecase)
+	paymentRepository := repository.NewPaymentRepository(gormDB)
+	paymentUsecase := usecase.NewPaymentuseCase(paymentRepository, orderRepository, configConfig)
+	paymentHandler := handlers.NewPaymentHandler(paymentUsecase)
 	wishlistRepository := repository.NewWishlistRepository(gormDB)
 	wishlistUsecase := usecase.NewWishlistUsecase(wishlistRepository)
 	wishlistHandler := handlers.NewWishlistHandler(wishlistUsecase)
-	serverHTTP := api.NewServerHTTP(userHandler, adminHandler, productHandler, cartHandler, orderHandler, wishlistHandler)
+	serverHTTP := api.NewServerHTTP(userHandler, adminHandler, productHandler, cartHandler, orderHandler, couponHandler, paymentHandler, wishlistHandler)
 	return serverHTTP, nil
 }

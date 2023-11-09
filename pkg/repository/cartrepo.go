@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
@@ -9,135 +10,152 @@ import (
 	"gorm.io/gorm"
 )
 
-type cartDatabase struct {
+type CartDatabase struct {
 	DB *gorm.DB
 }
 
 func NewCartRepository(DB *gorm.DB) interfaces.CartRepository {
-	return &cartDatabase{DB}
-}
-func (c *cartDatabase) CreateCart(id int) error {
-    query := `INSERT INTO carts (user_id, sub_total, total, coupon_id) VALUES ($1, 0, 0, 0)`
-    err := c.DB.Exec(query, id).Error
-    return err
+	return &CartDatabase{DB}
 }
 
-func (c *cartDatabase) AddtoCart(productId, userId int) error {
+func (c *CartDatabase) CreateCart(id int) error {
+	query := `INSERT INTO carts (user_id, sub_total,total,coupon_id) VALUES($1,0,0,0)`
+	err := c.DB.Exec(query, id).Error
+	return err
+}		
+
+func (c *CartDatabase) AddToCart(productId, userId int) error {
 	tx := c.DB.Begin()
-
+	//finding cart id coresponding to the user
 	var cartId int
-	findcartid := `SELECT id from carts WHERE user_id=?`
-	err := tx.Raw(findcartid, userId).Scan(&cartId).Error
+	findCartId := `SELECT id FROM carts WHERE user_id=? `
+	err := tx.Raw(findCartId, userId).Scan(&cartId).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	var CartItemId int
-	cartItemcheck := `SELECT id FROM cart_items WHERE carts_id =$1 AND product_item_id = $2 LIMIT 1`
-	err = tx.Raw(cartItemcheck, cartId, productId).Scan(&CartItemId).Error
+	//Check whether the product exists in the cart_items
+	var cartItemId int
+	cartItemCheck := `SELECT id FROM cart_items WHERE carts_id = $1 AND product_item_id = $2 LIMIT 1`
+	err = tx.Raw(cartItemCheck, cartId, productId).Scan(&cartItemId).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	if CartItemId == 0 {
-		addtocart := `INSERT INTO cart_items(carts_id,product_item_id,quantity)VALUES($1,$2,1)`
-		err = tx.Raw(addtocart, cartId, productId).Scan(&CartItemId).Error
+
+	if cartItemId == 0 {
+		addToCart := `INSERT INTO cart_items (carts_id,product_item_id,quantity)VALUES($1,$2,1)`
+		err = tx.Exec(addToCart, cartId, productId).Error
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
 	} else {
-		updatecart := `UPDATE cart_items SET quantity = cart_items.quantity+1 WHERE id=$1`
-		err = tx.Raw(updatecart, CartItemId).Error
+		updatCart := `UPDATE cart_items SET quantity = cart_items.quantity+1 WHERE id = $1 `
+		err = tx.Exec(updatCart, cartItemId).Error
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
 	}
+
+	//finding the price of the product
 	var price int
-	findprice := `SELECT price FROM product_items WHERE id=$1`
-	err = tx.Raw(findprice, productId).Scan(&price).Error
+	findPrice := `SELECT price FROM product_items WHERE id=$1`
+	err = tx.Raw(findPrice, productId).Scan(&price).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
+
+	//Updating the subtotal in cart table
 	var subtotal int
-	updateprice := `UPDATE carts SET sub_total=carts.sub_total+$1 WHERE user_id =$2 RETURNING sub_total`
-	err = tx.Raw(updateprice, price, userId).Scan(&subtotal).Error
+	updateSubTotal := `UPDATE carts SET sub_total=carts.sub_total+$1 WHERE user_id=$2 RETURNING sub_total`
+	err = tx.Raw(updateSubTotal, price, userId).Scan(&subtotal).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	// var couponId int
-	// findcoupon := `SELECT coupon_id FROM carts WHERE user_id=$1`
-	// err = tx.Raw(findcoupon, userId).Scan(&couponId).Error
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return err
-	// }
-	// if couponId != 0 {
-	// 	var coupons domain.Coupons
-	// 	getCouponDetails := `SELECT * FROM coupons WHERE id=$1`
-	// 	err := tx.Raw(getCouponDetails, couponId).Scan(&coupons).Error
-	// 	if err != nil {
-	// 		tx.Rollback()
-	// 		return err
-	// 	}
-	// 	discountAmount := (subtotal / 100) * int(coupons.DiscountPercent)
-	// 	if discountAmount > int(coupons.MinimumPurchaseAmount) {
-	// 		discountAmount = int(coupons.DiscountMaximumAmount)
-	// 	}
-	// 	updateTotal := `UPDATE carts SET total=$1 WHERE id=$2`
-	// 	err = tx.Raw(updateTotal, subtotal-discountAmount, cartId).Error
-	// 	if err != nil {
-	// 		tx.Rollback()
-	// 		return err
-	// 	}
-	// } else {
-	// 	updateTotal := `UPDATE carts SET total=$1 WHERE id=$2`
-	// 	err = tx.Raw(updateTotal, subtotal, cartId).Error
-	// 	if err != nil {
-	// 		tx.Rollback()
-	// 		return err
-	// 	}
-	// }
+
+	//check any coupon is present inside the cart
+	var couponId int
+	findCoupon := `SELECT coupon_id FROM carts WHERE user_id=$1`
+	err = tx.Raw(findCoupon, userId).Scan(&couponId).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if couponId != 0 {
+		//find the coupon details
+		var coupon domain.Coupons
+		getCouponDetails := `SELECT * FROM coupons WHERE id=$1`
+		err := tx.Raw(getCouponDetails, couponId).Scan(&coupon).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		//applay the coupon to the total
+		discountAmount := (subtotal / 100) * int(coupon.DiscountPercent)
+		if discountAmount > int(coupon.DiscountMaximumAmount) {
+			discountAmount = int(coupon.DiscountMaximumAmount)
+		}
+		updateTotal := `UPDATE carts SET total=$1 where id=$2`
+		err = tx.Exec(updateTotal, subtotal-discountAmount, cartId).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+	} else {
+		updateTotal := `UPDATE carts SET total=$1 where id=$2`
+		err = tx.Exec(updateTotal, subtotal, cartId).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 	if err = tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 	return nil
-
 }
-func (c *cartDatabase) RemoveFromCart(userId, productId int) error {
+
+func (c *CartDatabase) RemoveFromCart(userId, productId int) error {
 	tx := c.DB.Begin()
 
+	//Find cart id
 	var cartId int
-	findcartid := `SELECT id from carts WHERE user_id=?`
-	err := tx.Raw(findcartid, userId).Scan(&cartId).Error
+	findCartId := `SELECT id FROM carts WHERE user_id=? `
+	err := tx.Raw(findCartId, userId).Scan(&cartId).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
+
+	//Find the qty of the product in cart
 	var qty int
-	findquantity := `SELECT quantity from cart_items WHERE carts_id=$1 AND product_item_id=$2`
-	err = tx.Raw(findquantity, cartId, productId).Scan(&qty).Error
+	findQty := `SELECT quantity FROM cart_items WHERE carts_id=$1 AND product_item_id=$2`
+	err = tx.Raw(findQty, cartId, productId).Scan(&qty).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
+
 	if qty == 0 {
 		tx.Rollback()
-		return fmt.Errorf("no items to remove from cart")
+		return fmt.Errorf("no items in cart to reomve")
 	}
+
+	//If the qty is 1 dlt the product from the cart
 	if qty == 1 {
-		deleteitem := `DELETE FROM cart_items WHERE carts_id=$1 AND product_item_id=$2`
-		err := tx.Exec(deleteitem, cartId, productId).Error
-		fmt.Println("eeeee")
+		dltItem := `DELETE FROM cart_items WHERE carts_id=$1 AND product_item_id=$2`
+		err := tx.Exec(dltItem, cartId, productId).Error
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
-	} else {
+	} else { // If there is  more than one product reduce the qty by 1
 		updateQty := `UPDATE cart_items SET quantity=cart_items.quantity-1 WHERE carts_id=$1 AND product_item_id=$2`
 		err = tx.Exec(updateQty, cartId, productId).Error
 		if err != nil {
@@ -145,6 +163,8 @@ func (c *cartDatabase) RemoveFromCart(userId, productId int) error {
 			return err
 		}
 	}
+
+	//Find the price of the product item
 	var price int
 	productPrice := `SELECT price FROM product_items WHERE id=$1`
 	err = tx.Raw(productPrice, productId).Scan(&price).Error
@@ -160,45 +180,88 @@ func (c *cartDatabase) RemoveFromCart(userId, productId int) error {
 		tx.Rollback()
 		return err
 	}
+
+	//Check any coupon is added to the cart
+	var couponId int
+	findCoupon := `SELECT coupon_id from carts where id=$1`
+	err = tx.Raw(findCoupon, cartId).Scan(&couponId).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	//If coupon is added check the subtotal meet the minimum value to applay coupon
+	if couponId != 0 {
+		//Find the coupon details
+		var couponDetails domain.Coupons
+		findCouponDetails := `SELECT * FROM coupons WHERE id=$1`
+		err = tx.Raw(findCouponDetails, couponId).Scan(&couponDetails).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		if couponDetails.MinimumPurchaseAmount > float64(subTotal) {
+			//if sub total is less than the minimum value needed set remove the coupon from the cart and set the subtoal as total
+			updateTotal := `UPDATE carts SET total=$1 WHERE id=$2`
+			err = tx.Exec(updateTotal, subTotal, cartId).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			//applay the coupon to the total
+			discountAmount := (subTotal / 100) * int(couponDetails.DiscountPercent)
+			if discountAmount > int(couponDetails.DiscountMaximumAmount) {
+				discountAmount = int(couponDetails.DiscountMaximumAmount)
+			}
+			updateTotal := `UPDATE carts SET total=$1 WHERE id=$2`
+			err = tx.Exec(updateTotal, subTotal-discountAmount, cartId).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+	//If yes applay the coupon to the subtotal and add it as total
+
 	if err = tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 	return nil
 }
-func (c *cartDatabase) ListCart(userId int) (response.ViewCart, error) {
-    tx := c.DB.Begin()
-    
-    // Get cart details
-    type cartDetails struct {
-        Id       int
-        SubTotal float64
-        Total    float64
-    }
-    var cart cartDetails
-    getCartDetails := `SELECT
-        c.id,
-        c.sub_total,
-        c.total
-        FROM carts c WHERE c.user_id = $1`
-    err := tx.Raw(getCartDetails, userId).Scan(&cart).Error
 
-    if err != nil {
-        tx.Rollback()
-        return response.ViewCart{}, err
-    }
+func (c *CartDatabase) ListCart(userId int) (response.ViewCart, error) {
+	tx := c.DB.Begin()
+	//get cart details
+	type cartDetails struct {
+		Id         int
+		SubTotal   float64
+		Total      float64
+		Couponcode string
+	}
+	var cart cartDetails
+	getCartDetails := `SELECT
+		c.id,
+		c.sub_total,
+		c.total,
+		co.code AS couponcode
+		FROM carts c LEFT JOIN coupons co ON c.coupon_id=co.id WHERE c.user_id=$1`
+	err := tx.Raw(getCartDetails, userId).Scan(&cart).Error
 
-    // Get cart_items details
-    var cartItems []domain.CartItem
-    getCartItemsDetails := `SELECT * FROM cart_items WHERE carts_id = $1`
-    err = tx.Raw(getCartItemsDetails, cart.Id).Scan(&cartItems).Error
-    if err != nil {
-        tx.Rollback()
-        return response.ViewCart{}, err
-    }
-
-    // Get the product details
-    var details []response.DisplayCart
+	if err != nil {
+		tx.Rollback()
+		return response.ViewCart{}, err
+	}
+	//get cart_items details
+	var cartItems domain.CartItem
+	getCartItemsDetails := `SELECT * FROM cart_items WHERE carts_id=$1`
+	err = tx.Raw(getCartItemsDetails, cart.Id).Scan(&cartItems).Error
+	if err != nil {
+		tx.Rollback()
+		return response.ViewCart{}, err
+	}
+	//get the product details
+	var details []response.DisplayCart
     getDetails := `SELECT p.brand, pi.sku AS productname, 
         pi.color,
         pi.size,
@@ -208,22 +271,21 @@ func (c *cartDatabase) ListCart(userId int) (response.ViewCart, error) {
         (pi.price * ci.quantity) AS total
         FROM cart_items ci JOIN product_items pi  ON ci.product_item_id = pi.id
         JOIN products p ON pi.product_id = p.id WHERE ci.carts_id = $1`
-    err = tx.Raw(getDetails, cart.Id).Scan(&details).Error
-    if err != nil {
-        tx.Rollback()
-        return response.ViewCart{}, err
-    }
+	err = tx.Raw(getDetails, cart.Id).Scan(&details).Error
+	if err != nil {
+		tx.Rollback()
+		return response.ViewCart{}, err
+	}
 
-    var carts response.ViewCart
-    carts.CartTotal = cart.Total
-    carts.SubTotal = cart.SubTotal
-    carts.CartItems = details
-    carts.Discount = cart.SubTotal - cart.Total
-
-    if err = tx.Commit().Error; err != nil {
-        tx.Rollback()
-        return response.ViewCart{}, err
-    }
-
-    return carts, nil
+	var carts response.ViewCart
+	carts.Couponcode = cart.Couponcode
+	carts.CartTotal = cart.Total
+	carts.SubTotal = cart.SubTotal
+	carts.CartItems = details
+	carts.Discount = cart.SubTotal - cart.Total
+	if err = tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return response.ViewCart{}, err
+	}
+	return carts, nil
 }
