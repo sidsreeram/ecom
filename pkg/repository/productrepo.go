@@ -202,7 +202,9 @@ func (c *productDatabase) AddProductitem(productItem helperstruct.ProductItem) (
 		RETURNING id, product_id, sku, qty_in_stock, price, in_stock, color, size, rating, created_at
 	`
 	err := c.DB.Raw(query, productItem.Product_id, productItem.Sku, productItem.Qty, productItem.Price, productItem.Instock, productItem.Color, productItem.Size, productItem.Rating).Scan(&newProductItem).Error
-
+	fetchQuery := `SELECT p.product_name,p.description,p.brand,c.category_name FROM products p 
+	JOIN categories c ON p.category_id=c.id WHERE p.id=$1`
+err = c.DB.Raw(fetchQuery, productItem.Product_id).Scan(&newProductItem.Product).Error
 	return newProductItem, err
 }
 
@@ -217,7 +219,9 @@ func (c *productDatabase) UpdateProductItem(id int, product helperstruct.Product
 	`
 
 	err := c.DB.Raw(query, id, product.Product_id, product.Sku, product.Qty, product.Price, product.Instock, product.Color, product.Size, product.Rating).Scan(&updatedProductItem).Error
-
+	fetchQuery := `SELECT p.product_name,p.description,p.brand,c.category_name FROM products p 
+	JOIN categories c ON p.category_id=c.id WHERE p.id=$1`
+err = c.DB.Raw(fetchQuery, updatedProductItem.Product.Id).Scan(&updatedProductItem.Product).Error
 	return updatedProductItem, err
 }
 func (c *productDatabase) DeleteProductItem(id int) error {
@@ -251,25 +255,25 @@ func (c *productDatabase) DisplayAproductitem(id int) (response.ProductItem, err
 		return response.ProductItem{}, fmt.Errorf("there is no such product item")
 	}
 
-	// getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
-	// err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
-	// if err != nil {
-	// 	return response.ProductItem{}, err
-	// }
+	getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
+	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
+	if err != nil {
+		return response.ProductItem{}, err
+	}
 	return productItem, nil
 }
 
 func (c *productDatabase) DisaplyaAllProductItems(queryParams helperstruct.QueryParams) ([]response.ProductItem, error) {
 	var productItems []response.ProductItem
-	getProductItemDetails := `SELECT p.product_name,
-		p.description,
-		p.brand,
-		c.category_name, 
-		pi.*
-		FROM products p 
-		JOIN categories c ON p.category_id=c.id 
-		JOIN product_items pi ON p.id=pi.product_id`
-
+    getProductItemDetails := `
+        SELECT p.product_name,
+               p.description,
+               p.brand,
+               c.category_name,
+               pi.*
+        FROM products p
+        JOIN categories c ON p.category_id=c.id
+        JOIN product_items pi ON p.id=pi.product_id`
 	if queryParams.Query != "" && queryParams.Filter != "" {
 		getProductItemDetails = fmt.Sprintf("%s WHERE LOWER(%s) LIKE '%%%s%%'", getProductItemDetails, queryParams.Filter, strings.ToLower(queryParams.Query))
 	}
@@ -293,4 +297,9 @@ func (c *productDatabase) DisaplyaAllProductItems(queryParams helperstruct.Query
 
 	err := c.DB.Raw(getProductItemDetails).Scan(&productItems).Error
 	return productItems, err
+}
+func (c *productDatabase) UploadImage(filepath string, productId int) error {
+	uploadImage := `INSERT INTO product_images (product_item_id,file_name)VALUES($1,$2)`
+	err := c.DB.Exec(uploadImage, productId, filepath).Error
+	return err
 }

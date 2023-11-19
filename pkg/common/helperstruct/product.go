@@ -8,7 +8,7 @@ type Product struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 	Brand       string `json:"brand" validate:"required"`
-	CategoryId  string `json:"categoryid" validate:"required"`
+	CategoryId  int    `json:"categoryid" validate:"required"`
 }
 
 type ProductItem struct {

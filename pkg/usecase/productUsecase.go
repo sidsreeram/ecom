@@ -76,3 +76,7 @@ func (c*ProductUsecase) DisaplyaAllProductItems(viewProductitem helperstruct.Que
 	productitem,err:=c.productrepo.DisaplyaAllProductItems(viewProductitem)
 	return productitem,err
 }
+func (c *ProductUsecase) UploadImage(filepath string, productId int) error {
+	err := c.productrepo.UploadImage(filepath, productId)
+	return err
+}

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ECOMMERCE_PROJECT/pkg/api/handlerutils"
+	// "github.com/ECOMMERCE_PROJECT/pkg/api/handlerutils"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	services "github.com/ECOMMERCE_PROJECT/pkg/usecase/interface"
@@ -32,16 +32,17 @@ func (cr *PaymentHandler) CreateRazorpayPayment(c *gin.Context) {
 		})
 		return
 	}
-	userId, err := handlerutils.GetUserIdFromContext(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.Response{
-			StatusCode: 400,
-			Message:    "Can't find Id",
-			Data:       nil,
-			Errors:     err.Error(),
-		})
-		return
-	}
+	// userId, err := handlerutils.GetUserIdFromContext(c)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, response.Response{
+	// 		StatusCode: 400,
+	// 		Message:    "Can't find Id",
+	// 		Data:       nil,
+	// 		Errors:     err.Error(),
+	// 	})
+	// 	return
+	// }
+	userId := 31
 
 	order, razorpayID, err := cr.paymentUsecase.CreateRazorpayPayment(userId, orderId)
 	if err != nil {

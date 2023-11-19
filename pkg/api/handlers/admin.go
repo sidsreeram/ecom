@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/csv"
 	"net/http"
 	"strconv"
 
@@ -225,7 +226,7 @@ func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
 		Errors:     nil,
 	})
 }
-func (cr *AdminHandler) GetDashBoard(c*gin.Context){
+func (cr *AdminHandler) GetDashBoard(c *gin.Context) {
 	DashBoard, err := cr.adminUseCase.GetDashBoard()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Response{
@@ -245,71 +246,117 @@ func (cr *AdminHandler) GetDashBoard(c*gin.Context){
 	})
 
 }
-func(cr*AdminHandler)ViewDailySalesReport(c*gin.Context){
-	sales ,err:=cr.adminUseCase.ViewDailySalesReport()
-	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
-		StatusCode:400 ,
-		Message: "Can't get daily sales report",
-		Data: nil,
-		Errors: err.Error(),
-	})
-     return
+func (cr *AdminHandler) ViewDailySalesReport(c *gin.Context) {
+	sales, err := cr.adminUseCase.ViewDailySalesReport()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't get daily sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
 	}
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "daily sales report :",
-		Data: sales,
-		Errors: nil,
+		Message:    "daily sales report :",
+		Data:       sales,
+		Errors:     nil,
 	})
 }
-func(cr*AdminHandler)ViewWeelySalesReport(c*gin.Context){
-	sales ,err:=cr.adminUseCase.ViewWeeklySalesReport()
-	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
-		StatusCode:400 ,
-		Message: "Can't get daily sales report",
-		Data: nil,
-		Errors: err.Error(),
-	})
-     return
+func (cr *AdminHandler) ViewWeelySalesReport(c *gin.Context) {
+	sales, err := cr.adminUseCase.ViewWeeklySalesReport()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't get daily sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
 	}
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "weekly sales report :",
-		Data: sales,
-		Errors: nil,
+		Message:    "weekly sales report :",
+		Data:       sales,
+		Errors:     nil,
 	})
 }
-func(cr*AdminHandler)ViewMonthlySalesReport(c*gin.Context){
-	sales ,err:=cr.adminUseCase.ViewMonthlySalesReport()
-	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
-		StatusCode:400 ,
-		Message: "Can't get daily sales report",
-		Data: nil,
-		Errors: err.Error(),
-	})
-     return
+func (cr *AdminHandler) ViewMonthlySalesReport(c *gin.Context) {
+	sales, err := cr.adminUseCase.ViewMonthlySalesReport()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't get daily sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
 	}
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "monthly sales report :",
-		Data: sales,
-		Errors: nil,
+		Message:    "monthly sales report :",
+		Data:       sales,
+		Errors:     nil,
 	})
 }
-func(cr*AdminHandler)ViewYearlySalesReport(c*gin.Context){
-	sales ,err:=cr.adminUseCase.ViewYearlySalesReport()
-	if err !=nil {c.JSON(http.StatusBadRequest,response.Response{
-		StatusCode:400 ,
-		Message: "Can't get daily sales report",
-		Data: nil,
-		Errors: err.Error(),
-	})
-     return
+func (cr *AdminHandler) ViewYearlySalesReport(c *gin.Context) {
+	sales, err := cr.adminUseCase.ViewYearlySalesReport()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't get daily sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
 	}
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "yearly sales report :",
-		Data: sales,
-		Errors: nil,
+		Message:    "yearly sales report :",
+		Data:       sales,
+		Errors:     nil,
 	})
+}
+func (cr *AdminHandler) DownloadSalesReport(c *gin.Context) {
+	sales, err := cr.adminUseCase.ViewSalesReport()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant get sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	// Set headers so browser will download the file
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", "attachment;filename=sales.csv")
+
+	// Create a CSV writer using our response writer as our io.Writer
+	wr := csv.NewWriter(c.Writer)
+
+	// Write CSV header row
+	headers := []string{"Name", "PaymentType", "OrderDate", "OrderTotal"}
+	if err := wr.Write(headers); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Write data rows
+	for _, sale := range sales {
+		row := []string{sale.Name, sale.PaymentType, sale.OrderDate.Format("2006-01-02 15:04:05"), strconv.Itoa(sale.OrderTotal)}
+		if err := wr.Write(row); err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	// Flush the writer's buffer to ensure all data is written to the client
+	wr.Flush()
+	if err := wr.Error(); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
 }

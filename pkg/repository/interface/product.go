@@ -21,4 +21,5 @@ type ProductRepository interface {
 	DeleteProductItem(id int)error
 	DisplayAproductitem(id int)(response.ProductItem,error)
 	DisaplyaAllProductItems(queryParams helperstruct.QueryParams) ([]response.ProductItem, error)
+	UploadImage(filepath string, productId int) error
 }

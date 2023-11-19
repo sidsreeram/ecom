@@ -11,8 +11,8 @@ type Carts struct {
 type CartItem struct {
 	Id             uint `gorm:"primaryKey;unique;not null"`
 	Carts_id       uint
-	Carts          Carts `gorm:"foreignKey:Carts_id"`
+	// Carts          Carts `gorm:"foreignKey:Carts_id"`
 	ProductItem_id uint
-	ProductItem    ProductItem `gorm:"foreignKey:ProductItem_id"`
+	// ProductItem    ProductItem `gorm:"foreignKey:ProductItem_id"`
 	Quantity       int
 }

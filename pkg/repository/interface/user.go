@@ -20,4 +20,5 @@ type UserRepository interface {
 	UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error)
 	FindPassword(id int) (string, error)
 	UpdatePassword(id int, newPassword string) error
+//     Incrementwalllet(id int,money int)error
 }

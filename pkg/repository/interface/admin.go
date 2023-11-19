@@ -19,4 +19,5 @@ type AdminRepository interface {
 	ViewWeeklySalesReport() ([]response.SalesReport, error)
 	ViewMonthlySalesReport() ([]response.SalesReport, error)
 	ViewYearlySalesReport() ([]response.SalesReport, error)
+	ViewSalesReport() ([]response.SalesReport, error)
 }

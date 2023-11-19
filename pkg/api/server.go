@@ -18,7 +18,8 @@ func NewServerHTTP(
 	orderhandler *handlers.OrderHandler,
 	couponhandelr *handlers.CouponHandler,
 	paymenthandler *handlers.PaymentHandler,
-	wishlisthandler *handlers.WishlistHandler) *ServerHTTP {
+	wishlisthandler *handlers.WishlistHandler,
+	discounthandler *handlers.DiscountHandler) *ServerHTTP {
 
 	engine := gin.New()
 	engine.Use(gin.Logger())
@@ -90,6 +91,7 @@ func NewServerHTTP(
 				passwrod.POST("/verify", userHandler.VerifyForPassword)
 			}
 			user.GET("order/onlinepayment/pay/:orderId",paymenthandler.CreateRazorpayPayment)
+			user.GET("order/downloadinvoice/:orderId",orderhandler.DownloadInvoice)
 			// user.GET("payment-handler", paymenthandler.)
 			
 		}
@@ -135,6 +137,15 @@ func NewServerHTTP(
 			adminProductitem.DELETE("delete/:id", productHandler.DeleteProductItem)
 			adminProductitem.GET("/allproductitem", productHandler.DisaplyaAllProductItems)
 			adminProductitem.GET("productitem/:id", productHandler.DisplayAproductitem)
+			adminProductitem.POST("/uploadimage/:id",productHandler.UploadImage)
+		}
+		discount:=admin.Group("/discount")
+		{
+			discount.POST("/add",discounthandler.AddDiscount)
+			discount.PATCH("/update/:discountId",discounthandler.UpdateDiscount)
+			discount.DELETE("/delete/:discountId",discounthandler.DeleteDiscount)
+			discount.GET("/getall",discounthandler.GetAllDiscount)
+			discount.GET("/getbyid/:discountId",discounthandler.ViewDiscountbyID)
 		}
 		coupon:=admin.Group("/coupons")
 		{
@@ -150,6 +161,7 @@ func NewServerHTTP(
 		}
 		sales := admin.Group("/sales")
 		{
+			sales.GET("/download",adminHandler.DownloadSalesReport)
 			sales.GET("/daily", adminHandler.ViewDailySalesReport)
 			sales.GET("/weekly", adminHandler.ViewWeelySalesReport)
 			sales.GET("/monthly", adminHandler.ViewMonthlySalesReport)

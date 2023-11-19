@@ -2,10 +2,13 @@ package repository
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
 	interfaces "github.com/ECOMMERCE_PROJECT/pkg/repository/interface"
+	"github.com/go-pdf/fpdf"
+
 	"gorm.io/gorm"
 )
 
@@ -59,7 +62,7 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 	VALUES($1, NOW(), $2, $3, $4, 1,$5)
 	RETURNING *
                `
-	err = tx.Raw(setorder, id, paymentTypeId, addressId, cart.Total,cart.CouponId).Scan(&order).Error
+	err = tx.Raw(setorder, id, paymentTypeId, addressId, cart.Total, cart.CouponId).Scan(&order).Error
 	if err != nil {
 		tx.Rollback()
 		return domain.Orders{}, err
@@ -111,6 +114,41 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 			return domain.Orders{}, err
 		}
 	}
+	if paymentTypeId == 3 {
+		var walletmoney int
+		checkwallet := `SELECT wallet FROM users WHERE id = $1`
+		err = tx.Raw(checkwallet, order.UserId).Scan(&walletmoney).Error
+		if err != nil {
+			tx.Rollback()
+			return domain.Orders{}, err
+		}
+		if walletmoney >= cart.Total {
+			// Sufficient funds in the wallet, deduct from wallet
+
+			setwallet := `UPDATE users SET wallet = wallet - $1 WHERE id = $2`
+			err = tx.Exec(setwallet, cart.Total, order.UserId).Error
+			if err != nil {
+				tx.Rollback()
+				return domain.Orders{}, err
+			}
+			cart.Total = 0
+			order.OrderStatusID = 1
+
+		} else {
+			// Insufficient funds in the wallet, deduct the wallet money and use online payment for the remaining amount
+
+			setwallet := `UPDATE users SET wallet = 0 WHERE id = $1`
+			err = tx.Exec(setwallet, order.UserId).Error
+			if err != nil {
+				tx.Rollback()
+				return domain.Orders{}, err
+			}
+			order.OrderTotal = cart.Total - walletmoney
+			order.OrderStatusID = 7
+		}
+
+	}
+
 	createPaymentDetails := `INSERT INTO payment_details
 			(orders_id,
 			order_total,
@@ -144,7 +182,7 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 	}
 	for _, item := range items {
 		updateProductitem := `UPDATE product_items SET qty_in_stock=qty_in_stock+$1 WHERE id=$2`
-		err := tx.Raw(updateProductitem, item.Quantity, item.ProductItemId).Error
+		err := tx.Exec(updateProductitem, item.Quantity, item.ProductItemId).Error
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -162,6 +200,21 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+	var orderdetails domain.Orders
+	getorderdetails := `SELECT * FROM orders WHERE id=$1 AND user_id=$2`
+	err = tx.Raw(getorderdetails, orderId, userId).Scan(&orderdetails).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if orderdetails.PaymentTypeId == 2 || orderdetails.PaymentTypeId ==3 {
+		query := `UPDATE users SET wallet = wallet+$1 WHERE id =$2`
+		err := c.DB.Exec(query, orderdetails.OrderTotal, userId).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 	if err = tx.Commit().Error; err != nil {
 		tx.Rollback()
@@ -215,4 +268,68 @@ func (c *OrderDatabase) UpdateOrder(updateorder helperstruct.UpdateOrder) error 
 		return err
 	}
 	return nil
+}
+func (c *OrderDatabase) DownloadInvoice(orderId int) error {
+	var order domain.OrderItem
+	findOrder := `SELECT * FROM order_items WHERE id=?`
+	err := c.DB.Raw(findOrder, orderId).Scan(&order).Error
+	if err != nil {
+		return fmt.Errorf("Error fetching order details")
+	}
+
+	var products []domain.ProductItem
+	query := `SELECT * FROM product_items WHERE id = ?`
+	err = c.DB.Raw(query, order.ProductItemId).Scan(&products).Error
+	if err != nil {
+		return fmt.Errorf("Error fetching product items for the order")
+	}
+
+	pdf := fpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 20)
+	pdf.Cell(40, 10, "Invoice for Order ID: "+strconv.Itoa(orderId))
+
+	// Add order details to the invoice
+	pdf.Ln(15) // Increased space between the title and content
+	pdf.SetFont("Arial", "", 12)
+
+	for _, product := range products {
+		var productDetails domain.Product
+		productQuery := `SELECT * FROM products WHERE id = ?`
+		err := c.DB.Raw(productQuery, product.ProductID).Scan(&productDetails).Error
+		if err != nil {
+			return fmt.Errorf("Error fetching product details")
+		}
+
+		// Add product details to the invoice
+		pdf.Ln(10)
+		pdf.Cell(0, 8, "Product Name: "+productDetails.ProductName)
+		pdf.Ln(8)
+		pdf.Cell(0, 8, "Quantity: "+fmt.Sprint(order.Quantity))
+		pdf.Ln(8)
+		pdf.Cell(0, 8, "Total Amount: Rs."+fmt.Sprint(product.Price))
+	}
+
+	// Display the total amount for the entire order
+	pdf.Ln(12) // Increased space before total amount
+	pdf.SetFont("Arial", "B", 14)
+	pdf.Cell(0, 10, "Total Order Amount: Rs."+fmt.Sprint(order.Price))
+
+	// You can add other order-level details here
+
+	// Save the PDF with a unique filename
+	err = pdf.OutputFileAndClose("invoice_" + strconv.Itoa(orderId) + ".pdf")
+	if err != nil {
+		return fmt.Errorf("Error saving PDF file: %v", err)
+	}
+	return nil
+}
+func (c*OrderDatabase)GetUserIdFromOrder(orderId int)(int, error){
+	var userId int
+	query:=`select user_id from orders where id=?;`
+	err:=c.DB.Raw(query,orderId).Scan(&userId).Error
+	if err!=nil{
+      return 0,fmt.Errorf("can't fetch userid from orderid")
+	}
+	return userId , nil
 }

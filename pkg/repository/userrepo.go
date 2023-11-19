@@ -190,3 +190,24 @@ func (c *userDatabase) UpdatePassword(id int, newPassword string) error {
 	err := c.DB.Exec(updatePassword, newPassword, id).Error
 	return err
 }
+// func (c*userDatabase) Incrementwalllet(id int,money int)error{
+// 	query:=`UPDATE users SET wallet = wallet+$1 WHERE id =$2`
+// 	err:=c.DB.Exec(query,money,id).Error
+// 	return err
+// }
+func (c *userDatabase) Decrementwallet(id int, money int) error {
+	var checkmoney int
+	checkwallet := `SELECT wallet FROM users WHERE id=$1`
+	err := c.DB.Raw(checkwallet, id).Scan(&checkmoney).Error
+	if err != nil {
+		return fmt.Errorf("error in checking wallet amount: %v", err)
+	}
+
+	if checkmoney < money {
+		return fmt.Errorf("insufficient funds in your wallet")
+	}
+
+	query := `UPDATE users SET wallet = wallet - $1 WHERE id=$2`
+	err = c.DB.Exec(query, money, id).Error
+	return err
+}

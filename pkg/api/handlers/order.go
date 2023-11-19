@@ -235,3 +235,31 @@ func (o *OrderHandler) UpdateOrder(c *gin.Context) {
 		Errors: nil,
 	})
 }
+func (o *OrderHandler) DownloadInvoice(c *gin.Context) {
+    paramsId := c.Param("orderId")
+    orderId, err := strconv.Atoi(paramsId)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, response.Response{
+            StatusCode: 400,
+            Message:    "bind failed",
+            Data:       nil,
+            Errors:     err.Error(),
+        })
+        return
+    }
+
+    // Download the invoice, handle errors
+    err = o.Orderusecase.DownloadInvoice(orderId)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, response.Response{
+            StatusCode: 400,
+            Message:    "Can't download invoice",
+            Data:       nil,
+            Errors:     err.Error(),
+        })
+        return
+    }
+
+    // Send the PDF file as the response
+    c.File("invoice_" + paramsId + ".pdf")
+}

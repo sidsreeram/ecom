@@ -8,6 +8,7 @@ type Users struct {
 	Mobile    string `json:"mobile" binding:"required,eq=10" gorm:"unique; not null"`
 	Password  string `json:"password" gorm:"not null"`
 	IsBlocked bool   `gorm:"default:false"`
+	wallet    uint    `gorm:"wallet"`
 	CreatedAt time.Time
 }
 

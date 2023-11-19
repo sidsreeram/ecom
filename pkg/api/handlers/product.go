@@ -280,7 +280,6 @@ func (cr *ProductHandler) ListAllProduct(c *gin.Context) {
 	viewProduct.Filter = c.Query("filter")
 	viewProduct.SortBy = c.Query("sort_by")
 	viewProduct.SortDesc, _ = strconv.ParseBool(c.Query("sort_desc"))
-
 	fmt.Println(viewProduct)
 
 	products, err := cr.ProductUsecase.ListAllProduct(viewProduct)
@@ -436,7 +435,7 @@ func (cr *ProductHandler) DeleteProductItem(c *gin.Context) {
 		Errors:     nil,
 	})
 }
-func (cr*ProductHandler) DisaplyaAllProductItems(c *gin.Context){
+func (cr *ProductHandler) DisaplyaAllProductItems(c *gin.Context) {
 	var viewProductaItem helperstruct.QueryParams
 
 	viewProductaItem.Page, _ = strconv.Atoi(c.Query("page"))
@@ -465,7 +464,7 @@ func (cr*ProductHandler) DisaplyaAllProductItems(c *gin.Context){
 		Errors:     nil,
 	})
 }
-func (cr*ProductHandler) DisplayAproductitem(c*gin.Context){
+func (cr *ProductHandler) DisplayAproductitem(c *gin.Context) {
 	paramsId := c.Param("id")
 	id, err := strconv.Atoi(paramsId)
 	if err != nil {
@@ -493,4 +492,45 @@ func (cr*ProductHandler) DisplayAproductitem(c*gin.Context){
 		Data:       product,
 		Errors:     nil,
 	})
+}
+func (cr *ProductHandler) UploadImage(c *gin.Context) {
+
+	id := c.Param("id")
+	productId, err := strconv.Atoi(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant find product id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	// Multipart form
+	form, _ := c.MultipartForm()
+	files := form.File["images"]
+
+	for _, file := range files {
+		// Upload the file to specific dst.
+		c.SaveUploadedFile(file, "asset/uploads"+file.Filename)
+		fmt.Println(file.Filename)
+		err := cr.ProductUsecase.UploadImage(file.Filename, productId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, response.Response{
+				StatusCode: 400,
+				Message:    "cant upload images",
+				Data:       nil,
+				Errors:     err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, response.Response{
+			StatusCode: 200,
+			Message:    " images uploaded succesfully",
+			Data:       nil,
+			Errors:     nil,
+		})
+	}
 }

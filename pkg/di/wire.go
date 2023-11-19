@@ -22,6 +22,7 @@ func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
 		repository.NewPaymentRepository,
 		repository.NewCouponRepository,
 		repository.NewWishlistRepository,
+		repository.NewDiscountRepository,
 		usecase.NewUserUseCase,
 		usecase.NewAdminUsecase,
 		usecase.NewProductUsecase,
@@ -30,6 +31,7 @@ func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
 		usecase.NewPaymentuseCase,
 		usecase.NewCouponUsecase,
 		usecase.NewWishlistUsecase,
+		usecase.NewDiscountUsecase,
 		handlers.NewUserHandelr,
 		handlers.NewAdminHandler,
 		handlers.NewProductHandler,
@@ -38,6 +40,7 @@ func InitializeAPI1(config.Config) (*http.ServerHTTP, error) {
 		handlers.NewPaymentHandler,
 		handlers.NewCouponHandler,
 		handlers.NewWishlistHandler,
+		handlers.NewDiscountHandler,
 		http.NewServerHTTP,
 	)
 	return &http.ServerHTTP{}, nil

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"log"
+
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
 	interfaces "github.com/ECOMMERCE_PROJECT/pkg/repository/interface"
@@ -21,6 +23,8 @@ func (o *Orderusecase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 	return orders, err
 }
 func (o *Orderusecase) UserCancelOrder(orderId, userId int) error {
+	log.Println(orderId)
+	log.Println(userId)
 	err := o.Orderrepo.UserCancelOrder(orderId, userId)
 	return err
 }
@@ -38,5 +42,9 @@ func (o *Orderusecase) ListAllorder(userId int) (domain.Orders, error) {
 }
 func (o *Orderusecase) UpdateOrder(updateorder helperstruct.UpdateOrder) error {
 	err := o.Orderrepo.UpdateOrder(updateorder)
+	return err
+}
+func (o *Orderusecase) DownloadInvoice(orderId int) error {
+	err := o.Orderrepo.DownloadInvoice(orderId)
 	return err
 }

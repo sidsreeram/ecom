@@ -12,4 +12,5 @@ type OrderRepository interface {
 	ListAllorder(userId int) (domain.Orders, error)
 	ReturnOrder(userId, OrderId int) (int, error)
 	UpdateOrder(updateorder helperstruct.UpdateOrder) error
+	DownloadInvoice(orderId int) error
 }

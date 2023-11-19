@@ -3,6 +3,7 @@ module github.com/ECOMMERCE_PROJECT
 go 1.21.1
 
 require (
+	github.com/go-pdf/fpdf v0.9.0
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/spf13/viper v1.17.0
 	gorm.io/driver/postgres v1.5.2

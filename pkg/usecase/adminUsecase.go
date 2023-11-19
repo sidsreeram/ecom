@@ -133,6 +133,10 @@ func(c*adminUseCase)ViewYearlySalesReport() ([]response.SalesReport, error){
 	salesreport ,err :=c.adminRepo.ViewYearlySalesReport()
 	return salesreport ,err
 }
+func (c*adminUseCase)ViewSalesReport() ([]response.SalesReport, error){
+	salesreport,err :=c.adminRepo.ViewSalesReport()
+	return salesreport,err
+}
 
 
 	
