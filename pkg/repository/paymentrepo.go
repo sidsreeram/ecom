@@ -30,3 +30,12 @@ func (c *PaymentDatabase) UpdatePaymentDetails(orderID int, paymentRef string) (
 	err := c.DB.Raw(updatePaymentQuery, paymentRef, orderID).Scan(&updatedPayment).Error
 	return updatedPayment, err
 }
+func (c*PaymentDatabase)GetUserIdFromOrder(orderId int)(int, error){
+	var userId int
+	query:=`select user_id from orders where id=?;`
+	err:=c.DB.Raw(query,orderId).Scan(&userId).Error
+	if err!=nil{
+      return 0,fmt.Errorf("can't fetch userid from orderid")
+	}
+	return userId , nil
+}

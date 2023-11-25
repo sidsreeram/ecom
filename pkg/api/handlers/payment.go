@@ -32,17 +32,16 @@ func (cr *PaymentHandler) CreateRazorpayPayment(c *gin.Context) {
 		})
 		return
 	}
-	// userId, err := handlerutils.GetUserIdFromContext(c)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, response.Response{
-	// 		StatusCode: 400,
-	// 		Message:    "Can't find Id",
-	// 		Data:       nil,
-	// 		Errors:     err.Error(),
-	// 	})
-	// 	return
-	// }
-	userId := 31
+	userId, err := cr.paymentUsecase.GetUserIdFromOrder(orderId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't find Id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
 
 	order, razorpayID, err := cr.paymentUsecase.CreateRazorpayPayment(userId, orderId)
 	if err != nil {

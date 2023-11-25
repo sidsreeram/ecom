@@ -324,12 +324,3 @@ func (c *OrderDatabase) DownloadInvoice(orderId int) error {
 	}
 	return nil
 }
-func (c*OrderDatabase)GetUserIdFromOrder(orderId int)(int, error){
-	var userId int
-	query:=`select user_id from orders where id=?;`
-	err:=c.DB.Raw(query,orderId).Scan(&userId).Error
-	if err!=nil{
-      return 0,fmt.Errorf("can't fetch userid from orderid")
-	}
-	return userId , nil
-}

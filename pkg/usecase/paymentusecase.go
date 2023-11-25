@@ -80,3 +80,7 @@ func (c *PaymentUsecase) UpdatePaymentDetails(paymentVerifier helperstruct.Payme
 	}
 	return nil
 }
+func(o*PaymentUsecase)GetUserIdFromOrder(orderId int)(int, error){
+userID,err:= o.paymentrepo.GetUserIdFromOrder(orderId)
+	return userID,err
+}

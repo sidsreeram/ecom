@@ -127,7 +127,7 @@ func (u *UserHandler) VerifyLogin(c *gin.Context) {
 		return
 	}
 	// c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("UserAuth", ss, 3600*24*30, "/", "localhost", false, false)
+	c.SetCookie("UserAuth", ss, 3600*24*30, "/", "", false, false)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
 		Message:    "Login Successfully",
