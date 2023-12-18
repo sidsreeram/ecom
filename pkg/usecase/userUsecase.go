@@ -1,3 +1,4 @@
+// Package usecase provides the business logic for user-related operations.
 package usecase
 
 import (
@@ -16,16 +17,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// userUseCase implements the services.UserUseCase interface.
 type userUseCase struct {
 	userRepo interfaces.UserRepository
 }
 
+// NewUserUseCase creates a new instance of userUseCase.
 func NewUserUseCase(repo interfaces.UserRepository) services.UserUseCase {
 	return &userUseCase{
 		userRepo: repo,
 	}
 }
 
+// UserSignUp handles user registration by hashing the password and calling the repository.
 func (c *userUseCase) UserSignUp(ctx context.Context, user helperstruct.UserReq) (response.UserData, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
@@ -36,6 +40,7 @@ func (c *userUseCase) UserSignUp(ctx context.Context, user helperstruct.UserReq)
 	return userData, err
 }
 
+// UserLogin handles user login, checks credentials, generates OTP, and stores it.
 func (c *userUseCase) UserLogin(ctx context.Context, user helperstruct.LoginReq) error {
 	userData, err := c.userRepo.UserLogin(ctx, user.Email)
 	if err != nil {
@@ -54,6 +59,7 @@ func (c *userUseCase) UserLogin(ctx context.Context, user helperstruct.LoginReq)
 	if userData.IsBlocked {
 		return fmt.Errorf("user is blocked")
 	}
+
 	otp := controller.GenerateOTP()
 	controller.SendOTP(user, otp)
 	log.Println(otp)
@@ -65,6 +71,7 @@ func (c *userUseCase) UserLogin(ctx context.Context, user helperstruct.LoginReq)
 	return nil
 }
 
+// VerifyOTP verifies the provided OTP, generates a JWT token upon success.
 func (c *userUseCase) VerifyOTP(otp string) (string, error) {
 	id, res := c.userRepo.VerifyOTP(otp)
 	log.Printf("absdhasd")
@@ -84,14 +91,15 @@ func (c *userUseCase) VerifyOTP(otp string) (string, error) {
 	}
 	fmt.Println(ss)
 	return ss, nil
-
 }
 
+// IsSignIn checks if the user is signed in by calling the repository.
 func (c *userUseCase) IsSignIn(phno string) (bool, error) {
 	isSignin, err := c.userRepo.IsSignIn(phno)
 	return isSignin, err
 }
 
+// userStoreOTP stores the OTP in the repository.
 func userStoreOTP(c *userUseCase, userEmail string, otp string) error {
 	store := c.userRepo.StoreOTP(userEmail, otp)
 	if store {
@@ -100,28 +108,37 @@ func userStoreOTP(c *userUseCase, userEmail string, otp string) error {
 		return errors.New("error in storing otp")
 	}
 }
+
+// AddAddress adds an address to the user's profile.
 func (c *userUseCase) AddAddress(id int, address helperstruct.Address) error {
 	err := c.userRepo.AddAddress(id, address)
 	return err
 }
+
+// UpdateAddress updates an existing address in the user's profile.
 func (c *userUseCase) UpdateAddress(id, addressId int, address helperstruct.Address) error {
 	err := c.userRepo.UpdateAddress(id, addressId, address)
 	return err
 }
+
+// ViewProfile retrieves the user's profile information.
 func (c *userUseCase) ViewProfile(id int) (response.UserData, error) {
 	response, err := c.userRepo.ViewProfile(id)
 	return response, err
 }
+
+// UpdateProfile updates the user's profile information.
 func (c *userUseCase) UpdateProfile(id int, updatingdetails helperstruct.UserReq) (response.UserData, error) {
 	updatedProfile, err := c.userRepo.UpdateProfile(id, updatingdetails)
 	return updatedProfile, err
 }
-func (c *userUseCase) ChangePassword( user helperstruct.Email) error {
 
-       if user.Email == "" {
+// ChangePassword initiates the process of changing the user's password by generating and storing a new OTP.
+func (c *userUseCase) ChangePassword(user helperstruct.Email) error {
+	if user.Email == "" {
 		return fmt.Errorf("Please provide valid EMAILID")
 	}
-	
+
 	otp := controller.GenerateOTP()
 	controller.SendOTPforpassword(user, otp)
 	log.Println("password", otp)
@@ -131,22 +148,14 @@ func (c *userUseCase) ChangePassword( user helperstruct.Email) error {
 	}
 
 	return nil
-
 }
+
+// VerfiyForChangePassword verifies the OTP and updates the password if successful.
 func (c *userUseCase) VerfiyForChangePassword(otp string, id int, passwords helperstruct.UpdatePassword) error {
 	id, res := c.userRepo.VerifyOTP(otp)
 	if !res {
 		return errors.New("error in verifying otp")
 	}
-	// orginalPassword, err := c.userRepo.FindPassword(id)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // err = bcrypt.CompareHashAndPassword([]byte(orginalPassword), []byte(passwords.OldPassword))
-	// // if err != nil {
-	// // 	return err
-	// // }
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwords.NewPassword), 10)
 	if err != nil {

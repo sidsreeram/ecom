@@ -22,5 +22,6 @@ type ProductUsecase interface {
 	DisaplyaAllProductItems(viewProductitem helperstruct.QueryParams) ([]response.ProductItem, error)
 	DisplayAproductitem(id int) (response.ProductItem, error)
 	UploadImage(filepath string, productId int) error 
-	
+	UploadImageBinary(data []byte, filepath string, productId int) error
+	GetProductImages(productId int) ([]response.ProductImage,error)
 }

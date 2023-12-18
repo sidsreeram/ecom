@@ -12,6 +12,7 @@ import (
 
 type adminDatabase struct {
 	DB *gorm.DB
+	
 }
 
 func NewAdminRepository(DB *gorm.DB) interfaces.AdminRepository {

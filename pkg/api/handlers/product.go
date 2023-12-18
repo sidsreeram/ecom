@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -533,4 +534,100 @@ func (cr *ProductHandler) UploadImage(c *gin.Context) {
 			Errors:     nil,
 		})
 	}
+}
+
+func (cr *ProductHandler) UploadImageBinary(c *gin.Context) {
+    id := c.Param("id")
+    productId, err := strconv.Atoi(id)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, response.Response{
+            StatusCode: 400,
+            Message:    "can't find product id",
+            Data:       nil,
+            Errors:     err.Error(),
+        })
+        return
+    }
+
+    // Multipart form
+    form, _ := c.MultipartForm()
+    files := form.File["images"]
+
+    for _, file := range files {
+        // Open the file
+        uploadedFile, err := file.Open()
+        if err != nil {
+            c.JSON(http.StatusBadRequest, response.Response{
+                StatusCode: 400,
+                Message:    "can't open uploaded file",
+                Data:       nil,
+                Errors:     err.Error(),
+            })
+            return
+        }
+        defer uploadedFile.Close()
+
+        // Read the file content into a byte slice
+        fileBytes, err := io.ReadAll(uploadedFile)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, response.Response{
+                StatusCode: 400,
+                Message:    "can't read file content",
+                Data:       nil,
+                Errors:     err.Error(),
+            })
+            return
+        }
+
+        // Upload the image as bytes
+        err = cr.ProductUsecase.UploadImageBinary(fileBytes, file.Filename, productId)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, response.Response{
+                StatusCode: 400,
+                Message:    "can't upload image",
+                Data:       nil,
+                Errors:     err.Error(),
+            })
+            return
+        }
+
+        c.JSON(http.StatusOK, response.Response{
+            StatusCode: 200,
+            Message:    "image uploaded successfully",
+            Data:       nil,
+            Errors:     nil,
+        })
+    }
+}
+func (cr *ProductHandler) GetProductImages(c *gin.Context){
+	id := c.Param("id")
+    productId, err := strconv.Atoi(id)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, response.Response{
+            StatusCode: 400,
+            Message:    "can't find product id",
+            Data:       nil,
+            Errors:     err.Error(),
+        })
+        return
+    }
+	images, err := cr.ProductUsecase.GetProductImages(productId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find product images",
+			Data: nil,
+			Errors: err.Error(),
+		
+		})
+		return
+	}
+	c.JSON(http.StatusOK,response.Response{
+		StatusCode: 200,
+		Message: "image for the product item fetched successfully",
+		Data: images,
+		Errors: nil,
+	})
 }

@@ -80,3 +80,12 @@ func (c *ProductUsecase) UploadImage(filepath string, productId int) error {
 	err := c.productrepo.UploadImage(filepath, productId)
 	return err
 }
+func (c *ProductUsecase) UploadImageBinary(data []byte, filepath string, productId int) error {
+    err := c.productrepo.UploadImageBinary(data, filepath, productId)
+    return err
+}
+func (c *ProductUsecase) GetProductImages(productId int) ([]response.ProductImage,error){
+	data,err:= c.productrepo.GetProductImages(productId)
+	return data , err
+}
+

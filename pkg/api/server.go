@@ -138,6 +138,8 @@ func NewServerHTTP(
 			adminProductitem.GET("/allproductitem", productHandler.DisaplyaAllProductItems)
 			adminProductitem.GET("productitem/:id", productHandler.DisplayAproductitem)
 			adminProductitem.POST("/uploadimage/:id",productHandler.UploadImage)
+			adminProductitem.POST("/uploadimagebinary/:id",productHandler.UploadImageBinary)
+			adminProductitem.GET("/image/:id",productHandler.GetProductImages)
 		}
 		discount:=admin.Group("/discount")
 		{

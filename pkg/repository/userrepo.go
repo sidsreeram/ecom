@@ -172,12 +172,12 @@ func (c *userDatabase) ViewProfile(id int) (response.UserData, error) {
 	return profileData, err
 }
 
-func (c *userDatabase) UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error){
-var profile response.UserData
-query:=`UPDATE users SET name=$1,email=$2,mobile=$3 WHERE id=$4 RETURNING name,email,mobile`
-err:=c.DB.Raw(query,updatedetails.Name,updatedetails.Email,updatedetails.Mobile,id).Scan(&profile).Error
-fmt.Printf("updated Profile")
-return profile,err
+func (c *userDatabase) UpdateProfile(id int, updatedetails helperstruct.UserReq) (response.UserData, error) {
+	var profile response.UserData
+	query := `UPDATE users SET name=$1,email=$2,mobile=$3 WHERE id=$4 RETURNING name,email,mobile`
+	err := c.DB.Raw(query, updatedetails.Name, updatedetails.Email, updatedetails.Mobile, id).Scan(&profile).Error
+	fmt.Printf("updated Profile")
+	return profile, err
 }
 func (c *userDatabase) FindPassword(id int) (string, error) {
 	var orginalPassword string
@@ -190,11 +190,12 @@ func (c *userDatabase) UpdatePassword(id int, newPassword string) error {
 	err := c.DB.Exec(updatePassword, newPassword, id).Error
 	return err
 }
-// func (c*userDatabase) Incrementwalllet(id int,money int)error{
-// 	query:=`UPDATE users SET wallet = wallet+$1 WHERE id =$2`
-// 	err:=c.DB.Exec(query,money,id).Error
-// 	return err
-// }
+
+//	func (c*userDatabase) Incrementwalllet(id int,money int)error{
+//		query:=`UPDATE users SET wallet = wallet+$1 WHERE id =$2`
+//		err:=c.DB.Exec(query,money,id).Error
+//		return err
+//	}
 func (c *userDatabase) Decrementwallet(id int, money int) error {
 	var checkmoney int
 	checkwallet := `SELECT wallet FROM users WHERE id=$1`
@@ -211,3 +212,4 @@ func (c *userDatabase) Decrementwallet(id int, money int) error {
 	err = c.DB.Exec(query, money, id).Error
 	return err
 }
+

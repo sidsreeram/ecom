@@ -93,9 +93,10 @@ func (c *CartDatabase) AddToCart(productId, userId int) error {
 		return err
 	}
 
-	if discount.Id == 0 {
-		return fmt.Errorf("no offer found ")
-	}
+	// if discount.Id == 0 {
+	// 	tx.Rollback()
+	// 	return fmt.Errorf("no offer found ")
+	// }
 
 	if discount.ExpirationDate.Before(time.Now()) {
 		tx.Rollback()

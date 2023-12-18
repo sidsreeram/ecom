@@ -255,7 +255,7 @@ func (c *productDatabase) DisplayAproductitem(id int) (response.ProductItem, err
 		return response.ProductItem{}, fmt.Errorf("there is no such product item")
 	}
 
-	getImages := `SELECT file_name FROM images WHERE product_item_id=$1`
+	getImages := `SELECT data  FROM pro_i_tem_images WHERE product_item_id=$1`
 	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
 	if err != nil {
 		return response.ProductItem{}, err
@@ -302,4 +302,15 @@ func (c *productDatabase) UploadImage(filepath string, productId int) error {
 	uploadImage := `INSERT INTO product_images (product_item_id,file_name)VALUES($1,$2)`
 	err := c.DB.Exec(uploadImage, productId, filepath).Error
 	return err
+}
+func (c*productDatabase) UploadImageBinary(data []byte, filepath string, productId int) error {
+	query:=`INSERT INTO pro_i_tem_images (product_item_id,file_name,data)VALUES($1,$2,$3)`
+	err:=c.DB.Exec(query,productId,filepath,data).Error
+	return err
+}
+func (c *productDatabase) GetProductImages(productId int) ([]response.ProductImage,error){
+	var productImages []response.ProductImage
+	query:=`select * from pro_i_tem_images where product_item_id=? `
+	err:=c.DB.Raw(query,productId).Scan(&productImages).Error
+	return productImages,err
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
+	_ "github.com/golang/mock/mockgen/model"
 )
 
 type UserRepository interface {
@@ -17,8 +18,8 @@ type UserRepository interface {
 	AddAddress(id int, address helperstruct.Address) error
 	UpdateAddress(id, addressId int, address helperstruct.Address) error
 	ViewProfile(id int) (response.UserData, error)
-	UpdateProfile(id int,updatedetails helperstruct.UserReq) (response.UserData,error)
+	UpdateProfile(id int, updatedetails helperstruct.UserReq) (response.UserData, error)
 	FindPassword(id int) (string, error)
 	UpdatePassword(id int, newPassword string) error
-//     Incrementwalllet(id int,money int)error
+	//     Incrementwalllet(id int,money int)error
 }
