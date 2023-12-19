@@ -46,7 +46,7 @@ jobs:
 
       - name : Unit Tests
         run: |
-          go test ./... -cover
+          go test ./... -cover-
 
       - name: Build the Go application
         run: |
