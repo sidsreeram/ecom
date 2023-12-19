@@ -46,7 +46,7 @@ func TestUserSignUp(t *testing.T) {
 			buildStub: func() {
 				userusecase.EXPECT().UserSignUp(gomock.Any(), gomock.Any()).Return(response.UserData{
 					Id:     1,
-					Name:   "sid",
+					Name:   "siddharth",
 					Email:  "sidx141202@gmail.com",
 					Mobile: "8590496810",
 				}, nil)
