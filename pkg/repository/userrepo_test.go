@@ -10,6 +10,8 @@ import (
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	"github.com/ECOMMERCE_PROJECT/pkg/domain"
+	"github.com/ECOMMERCE_PROJECT/pkg/repository/mocks"
+	"github.com/golang/mock/gomock"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -72,29 +74,26 @@ func TestUserSignUp(t *testing.T) {
 				Mobile: user.Mobile,
 			},
 			buildStub: func() {
-        rows := sqlmock.NewRows([]string{"id", "name", "email", "mobile"}). // Changed "phone" to "mobile"
-          AddRow(1, user.Name, user.Email, user.Mobile)
-      
-        mock.ExpectQuery("^INSERT INTO users (.+)$").
-          WithArgs(user.Name, user.Email, user.Mobile, user.Password).
-          WillReturnRows(rows)
-      },
-      
+				rows := sqlmock.NewRows([]string{"id", "name", "email", "mobile"}). // Changed "phone" to "mobile"
+													AddRow(1, user.Name, user.Email, user.Mobile)
+
+				mock.ExpectQuery("^INSERT INTO users (.+)$").
+					WithArgs(user.Name, user.Email, user.Mobile, user.Password).
+					WillReturnRows(rows)
+			},
 		},
 		{
 			name:           "duplicate entry",
 			input:          *user,
 			expectedOutput: response.UserData{},
 			buildStub: func() {
-        // Simulate a duplicate entry by expecting an empty result set
-        rows := sqlmock.NewRows([]string{"id", "name", "email", "mobile"})
-    
-        mock.ExpectQuery("^INSERT INTO users (.+)$").
-            WithArgs(user.Name, user.Email, user.Mobile, user.Password).
-            WillReturnRows(rows)
-    },
-    
-      
+				// Simulate a duplicate entry by expecting an empty result set
+				rows := sqlmock.NewRows([]string{"id", "name", "email", "mobile"})
+
+				mock.ExpectQuery("^INSERT INTO users (.+)$").
+					WithArgs(user.Name, user.Email, user.Mobile, user.Password).
+					WillReturnRows(rows)
+			},
 		},
 	}
 
@@ -150,7 +149,7 @@ func TestUserLogin(t *testing.T) {
 			name:  "success entry",
 			email: "sidx141202@gmail.com",
 			expectedOutput: domain.Users{
-		         ID: 1,
+				ID:     1,
 				Name:   "siddharth",
 				Email:  "sidx141202@gmail.com",
 				Mobile: "8590496810",
@@ -195,3 +194,100 @@ func TestUserLogin(t *testing.T) {
 	}
 }
 
+func TestStoreOTP(t *testing.T) {
+	
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Define the email and OTP for testing
+	testEmail := "test@example.com"
+	testOTP := "123456"
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	// Set expectation on mock
+	mockUserRepo.EXPECT().StoreOTP(testEmail, testOTP).Return(true)
+
+	// Call the function and check the result
+	result := mockUserRepo.StoreOTP(testEmail, testOTP)
+	if result != true {
+		t.Errorf("Expected true, but got %v", result)
+	}
+}
+func TestVerifyOTP(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    mockUserRepo := mocks.NewMockUserRepository(ctrl)
+
+    // Define the OTP for testing
+    testOTP := "123456"
+
+    // Define the expected return values
+    expectedUserID := 1
+    expectedBool := true
+
+    // Set expectation on mock
+    mockUserRepo.EXPECT().VerifyOTP(testOTP).Return(expectedUserID, expectedBool)
+
+    // Call the function and check the result
+    userID, boolVal := mockUserRepo.VerifyOTP(testOTP)
+    if userID != expectedUserID || boolVal != expectedBool {
+        t.Errorf("Expected userID %v and boolVal %v, but got userID %v and boolVal %v", expectedUserID, expectedBool, userID, boolVal)
+    }
+}
+func TestAddAddress(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    mockUserRepo := mocks.NewMockUserRepository(ctrl)
+
+    // Define the test data
+    testID := 1
+    testAddress := helperstruct.Address{
+        House_number: "123",
+        Street:       "kolasseri",
+        City:         "kadampzhipuram",
+        District:     "palakkad",
+        Landmark:     "kerala",
+        Pincode:      123456,
+        IsDefault:    true,
+    }
+
+    // Set expectations on mock
+    mockUserRepo.EXPECT().AddAddress(testID, testAddress).Return(nil)
+
+    // Call the function and check the result
+    err := mockUserRepo.AddAddress(testID, testAddress)
+    if err != nil {
+        t.Errorf("AddAddress returned error: %v", err)
+    }
+}
+
+func TestUpdateAddress(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    mockUserRepo := mocks.NewMockUserRepository(ctrl)
+
+    // Define the test data
+    testID := 1
+    testAddress := helperstruct.Address{
+        House_number: "123",
+        Street:       "kolasseri",
+        City:         "kadampzhipuram",
+        District:     "palakkad",
+        Landmark:     "kerala",
+        Pincode:      123456,
+        IsDefault:    true,
+    }
+
+    // Set expectations on mock
+    mockUserRepo.EXPECT().UpdateAddress(testID, testID, testAddress).Return(nil)
+
+    // Call the function and check the result
+    err := mockUserRepo.UpdateAddress(testID, testID, testAddress)
+    if err != nil {
+        t.Errorf("UpdateAddress returned error: %v", err)
+    }
+}
+
+// Continue with similar test functions for ViewProfile, UpdateProfile, FindPassword, and UpdatePassword

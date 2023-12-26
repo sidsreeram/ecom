@@ -74,11 +74,10 @@ func (c *userUseCase) UserLogin(ctx context.Context, user helperstruct.LoginReq)
 // VerifyOTP verifies the provided OTP, generates a JWT token upon success.
 func (c *userUseCase) VerifyOTP(otp string) (string, error) {
 	id, res := c.userRepo.VerifyOTP(otp)
-	log.Printf("absdhasd")
+
 	if !res {
 		return "", errors.New("error in verifying otp")
 	}
-	log.Println(id)
 
 	claims := jwt.MapClaims{
 		"id":  id,
@@ -89,15 +88,9 @@ func (c *userUseCase) VerifyOTP(otp string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(ss)
 	return ss, nil
 }
 
-// IsSignIn checks if the user is signed in by calling the repository.
-func (c *userUseCase) IsSignIn(phno string) (bool, error) {
-	isSignin, err := c.userRepo.IsSignIn(phno)
-	return isSignin, err
-}
 
 // userStoreOTP stores the OTP in the repository.
 func userStoreOTP(c *userUseCase, userEmail string, otp string) error {

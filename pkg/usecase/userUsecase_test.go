@@ -11,6 +11,7 @@ import (
 	"github.com/ECOMMERCE_PROJECT/pkg/common/helperstruct"
 	"github.com/ECOMMERCE_PROJECT/pkg/common/response"
 	"github.com/ECOMMERCE_PROJECT/pkg/repository/mocks"
+	mock "github.com/ECOMMERCE_PROJECT/pkg/usecase/mocks"
 	"github.com/go-playground/assert/v2"
 	"github.com/golang/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
@@ -102,5 +103,85 @@ func TestUserSignup(t *testing.T) {
 			assert.Equal(t, tc.expectedOutput, actualOutput)
 			assert.Equal(t, tc.expectedError, actualError)
 		})
+	}
+}
+func TestUserLogin(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserUseCase := mock.NewMockUserUseCase(ctrl)
+
+	// Define the test data
+	testUser := helperstruct.LoginReq{
+		Email:    "sidx141202@gmail.com",
+		Password: "abcdef",
+	}
+
+	// Set expectations on mock
+	mockUserUseCase.EXPECT().UserLogin(gomock.Any(), testUser).Return(nil).AnyTimes()
+
+	// Call the function and check the result
+	err := mockUserUseCase.UserLogin(context.Background(), testUser)
+	if err != nil {
+		t.Errorf("UserLogin returned unexpected error: %v", err)
+	}
+}
+
+func TestVerifyOTP(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+
+	// Define the test data
+	testOTP := "123456"
+
+	// Set expectations on mock
+	mockUserRepo.EXPECT().VerifyOTP(gomock.Eq(testOTP)).Return(42, true)
+
+	// Call the function and check the result
+	userID, isValid := mockUserRepo.VerifyOTP(testOTP)
+
+	// Now you can use userID and isValid in your test logic if needed
+	fmt.Println(userID, isValid)
+}
+func TestAddAddress(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	userUseCase := NewUserUseCase(mockUserRepo)
+
+	testAddress := helperstruct.Address{
+		// Fill in the fields of the address
+	}
+
+	// Set expectations on mock
+	mockUserRepo.EXPECT().AddAddress(1, testAddress).Return(nil)
+
+	// Call the function and check the result
+	err := userUseCase.AddAddress(1, testAddress)
+	if err != nil {
+		t.Errorf("AddAddress returned error: %v", err)
+	}
+}
+
+func TestUpdateAddress(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	userUseCase := NewUserUseCase(mockUserRepo)
+
+	testAddress := helperstruct.Address{
+		// Fill in the fields of the address
+	}
+
+	// Set expectations on mock
+	mockUserRepo.EXPECT().UpdateAddress(1, 1, testAddress).Return(nil)
+
+	// Call the function and check the result
+	err := userUseCase.UpdateAddress(1, 1, testAddress)
+	if err != nil {
+		t.Errorf("UpdateAddress returned error: %v", err)
 	}
 }

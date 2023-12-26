@@ -35,13 +35,7 @@ func (c *userDatabase) UserLogin(ctx context.Context, email string) (domain.User
 	return userData, err
 }
 
-func (c *userDatabase) IsSignIn(phno string) (bool, error) {
-	quwery := "select exists(select 1 from users where mobile=?)"
-	var isSignIng bool
-	err := c.DB.Raw(quwery, phno).Scan(&isSignIng).Error
-	return isSignIng, err
 
-}
 
 // ---------------------- StoreOTP ---------------------- //
 
@@ -97,23 +91,6 @@ func (c *userDatabase) VerifyOTP(otp string) (int, bool) {
 
 	return otpDB.UserID, true
 }
-
-// func (c *userDatabase) OtpLogin(phno string) (int, error) {
-// 	var id int
-// 	query := "SELECT id FROM users WHERE mobile=?"
-// 	err := c.DB.Raw(query, phno).Scan(&id).Error
-// 	return id, err
-// }
-// func (c *userDatabase) insertOTP(emailID, otp string) error {
-//     // Prepare the SQL statement for inserting OTP
-// 	var id int
-//     query := "INSERT INTO temp_otp (email_id, otp) VALUES ($1, $2)"
-
-// 	err:=c.DB.Raw(query,emailID).Scan(&id).Error
-//     // Execute the SQL query
-
-//     return err
-// }
 
 func (c *userDatabase) AddAddress(id int, address helperstruct.Address) error {
 
