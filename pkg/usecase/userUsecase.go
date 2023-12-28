@@ -111,8 +111,9 @@ func (c *userUseCase) AddAddress(id int, address helperstruct.Address) error {
 // UpdateAddress updates an existing address in the user's profile.
 func (c *userUseCase) UpdateAddress(id, addressId int, address helperstruct.Address) error {
 	err := c.userRepo.UpdateAddress(id, addressId, address)
-	return err
+	
 }
+
 
 // ViewProfile retrieves the user's profile information.
 func (c *userUseCase) ViewProfile(id int) (response.UserData, error) {
