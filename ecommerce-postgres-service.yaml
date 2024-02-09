@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-postgres
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: ecommerce-postgres
+  template:
+    metadata:
+      labels:
+        app: ecommerce-postgres
+    spec:
+      containers:
+      - name: ecommerce-postgres
+        image: postgres:latest  
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_DB
+          value: ecommerce_project
+        - name: POSTGRES_PASSWORD
+          value: partner

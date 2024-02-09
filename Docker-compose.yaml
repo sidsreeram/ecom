@@ -1,21 +1,23 @@
-
 version: '3.8'
 
 services:
   web-app:
     build:
       context: .
-      dockerfile: Dockerfile # Adjust this if your Dockerfile is in a different location
+      dockerfile: Dockerfile
     environment:
-      DB_URL: "host=postgres dbname=ecommerce_project user=postgres password=partner sslmode=disable"
+      DB_URL: "host=postgres dbname=ecommerce_project user=postgres password=partner sslmode=disable" 
     ports:
       - "3000:3000"
     depends_on:
       - postgres
+    volumes:
+      - ./cmd:/app/cmd
+      - ./EXEC:/app/EXEC
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: ecommerce_project
+      POSTGRES_DB: ecommerce_project 
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: partner
     ports:

@@ -176,6 +176,6 @@ func NewServerHTTP(
 }
 
 func (s *ServerHTTP) Start() {
-	s.engine.LoadHTMLGlob("../template/*.html")
+	s.engine.LoadHTMLGlob("template/*.html")
 	s.engine.Run(":3000")
 }
